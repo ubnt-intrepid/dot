@@ -1,0 +1,12 @@
+[package]
+name = "dot"
+version = "0.0.1"
+authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
+description = "Alternative of dotfile management frameworks"
+build = "build.rs"
+
+[build-dependencies]
+clap = "^2.13.0"
+
+[dependencies]
+clap = "^2.13.0"

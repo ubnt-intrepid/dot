@@ -1,0 +1,35 @@
+language: generic
+sudo: required
+dist: trusty
+
+matrix:
+  include:
+  - os: linux
+    env: TARGET=dot  TOOLCHAIN=stable  HOST=x86_64-unknown-linux-gnu
+  - os: osx
+    env: TARGET=dot  TOOLCHAIN=stable  HOST=x86_64-apple-darwin
+
+install:
+  - curl -sSLf sh.rustup.rs | sh -s -- -y --default-toolchain="$TOOLCHAIN" --default-host="$HOST" --no-modify-path --verbose
+  - export PATH="$HOME/.cargo/bin:$PATH"
+  - rustc -V
+  - cargo -V
+
+script:
+  - cargo build --release
+  - cargo test --release
+
+before_deploy:
+  - cp target/release/$TARGET $TARGET-$HOST
+
+deploy:
+  provider: releases
+  api_key:
+    secure: aa
+  file: $TARGET-$HOST
+  overwrite: true
+  skip_cleanup: true
+  on:
+    repo: ubnt-intrepid/dot.rs
+    all_branches: true
+    tags: true
