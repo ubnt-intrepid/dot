@@ -1,4 +1,4 @@
-use clap::{Arg, App, AppSettings, SubCommand};
+use clap::{App, AppSettings, SubCommand};
 
 fn build_cli_base() -> App<'static, 'static> {
   App::new(env!("CARGO_PKG_NAME"))
@@ -10,5 +10,6 @@ fn build_cli_base() -> App<'static, 'static> {
 }
 
 pub fn build_cli() -> App<'static, 'static> {
-  build_cli_base()
+  build_cli_base().subcommand(SubCommand::with_name("list")
+    .about("Show the list which files will be managed by dot"))
 }

@@ -10,3 +10,4 @@ clap = "^2.13.0"
 
 [dependencies]
 clap = "^2.13.0"
+toml = "*"
