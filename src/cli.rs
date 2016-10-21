@@ -10,6 +10,9 @@ fn build_cli_base() -> App<'static, 'static> {
 }
 
 pub fn build_cli() -> App<'static, 'static> {
-  build_cli_base().subcommand(SubCommand::with_name("list")
-    .about("Show the list which files will be managed by dot"))
+  build_cli_base()
+    .subcommand(SubCommand::with_name("list")
+      .about("Show the list which files will be managed by dot"))
+    .subcommand(SubCommand::with_name("check")
+      .about("Check the files are correctly linked to the right places"))
 }

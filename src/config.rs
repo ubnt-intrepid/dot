@@ -1,26 +1,11 @@
 use std::collections::BTreeMap;
-use std::fs::{self, File};
-use std::path::{Path, PathBuf};
+use std::fs::File;
+use std::path::Path;
 use std::io::{self, Read, BufRead, BufReader};
 use toml;
 use shellexpand;
 use regex;
-
-
-#[derive(Clone)]
-pub struct Entry {
-  src: PathBuf,
-  dst: PathBuf,
-}
-
-impl Entry {
-  pub fn source(&self) -> &Path {
-    self.src.as_path()
-  }
-  pub fn dest(&self) -> &Path {
-    self.dst.as_path()
-  }
-}
+use entry::Entry;
 
 
 #[allow(dead_code)]
@@ -77,8 +62,8 @@ fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec
     }
 
     buf.push(Entry {
-      src: fs::canonicalize(src).unwrap(),
-      dst: fs::canonicalize(dst).unwrap(),
+      src: Path::new(&src).to_path_buf(),
+      dst: Path::new(&dst).to_path_buf(),
     });
   }
 
