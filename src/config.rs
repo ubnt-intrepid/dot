@@ -8,11 +8,10 @@ use regex;
 use entry::Entry;
 use util;
 
-#[allow(dead_code)]
 pub struct Config {
   pub repo: String,
   pub dotdir: String,
-  pub linkfiles: BTreeMap<String, Vec<Entry>>,
+  linkfiles: Vec<String>,
 }
 
 impl Config {
@@ -25,13 +24,13 @@ impl Config {
     env::set_var("clone_repository", util::expand_full(&repo));
     env::set_var("dotdir", util::expand_full(&dotdir));
 
-    let mut linkfiles = BTreeMap::new();
+    let mut linkfiles = Vec::new();
     for linkfile in config.get("linkfiles")
       .unwrap()
       .as_slice()
       .unwrap() {
       let linkfile = util::expand_full(linkfile.as_str().unwrap());
-      linkfiles.insert(linkfile, Vec::new());
+      linkfiles.push(linkfile);
     }
 
     Config {
@@ -41,10 +40,13 @@ impl Config {
     }
   }
 
-  pub fn read_linkfiles(&mut self) {
-    for (linkfile, links) in self.linkfiles.iter_mut() {
-      *links = parse_linkfile(&linkfile, &self.dotdir);
+  pub fn read_linkfiles(&mut self) -> BTreeMap<String, Vec<Entry>> {
+    let mut buf = BTreeMap::new();
+    for linkfile in self.linkfiles.iter() {
+      let links = parse_linkfile(&linkfile, &self.dotdir);
+      buf.insert(linkfile.clone(), links);
     }
+    buf
   }
 }
 
