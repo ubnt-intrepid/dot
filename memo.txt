@@ -1,0 +1,19 @@
+# implemented
+check => check
+clear => clean
+list => list
+set  => link
+
+# register/unregister conf file(s)
+add
+unlink
+
+# clone from / sync with Git repository. 
+clone
+pull
+update
+
+# never supported
+cd => ✘
+config => ✘
+edit => ✘
