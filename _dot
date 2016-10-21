@@ -35,7 +35,7 @@ _dot() {
 
     case "${cmd}" in
         dot)
-            opts=" -h -V  --help --version   list check clean link help"
+            opts=" -n -h -V  --dry-run --help --version   list check clean link help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -66,7 +66,7 @@ _dot() {
             return 0
             ;;
         dot_clean)
-            opts=" -n -h -V  --dry-run --help --version  "
+            opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -96,7 +96,7 @@ _dot() {
             return 0
             ;;
         dot_link)
-            opts=" -n -h -V  --dry-run --help --version  "
+            opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -129,6 +129,7 @@ _dot() {
 }
 
 complete -F _dot dot
+ -F _dot dot
          ;;
         dot_list)
             opts=" -h -V  --help --version  "

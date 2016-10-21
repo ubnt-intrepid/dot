@@ -13,22 +13,22 @@ use entry::EntryStatus;
 
 
 pub fn main() {
-  let matches = cli::build_cli().get_matches();
+  let config = Config::new("dotconfig.toml");
 
+  let matches = cli::build_cli().get_matches();
+  let dry_run = matches.is_present("dry-run");
   let exitcode = match matches.subcommand() {
-    ("check", Some(m)) => command_check(m),
-    ("clean", Some(m)) => command_clean(m),
-    ("link", Some(m)) => command_link(m),
-    ("list", Some(m)) => command_list(m),
+    ("list", Some(m)) => command_list(config, m),
+    ("check", Some(m)) => command_check(config, m),
+    ("clean", Some(m)) => command_clean(config, m, dry_run),
+    ("link", Some(m)) => command_link(config, m, dry_run),
     (_, _) => unreachable!(),
   };
   std::process::exit(exitcode);
 }
 
 
-pub fn command_check(_: &clap::ArgMatches) -> i32 {
-  let config = Config::new("dotconfig.toml");
-
+pub fn command_check(config: Config, _: &clap::ArgMatches) -> i32 {
   let mut num_unhealth = 0;
 
   for (linkfile, entries) in config.linkfiles {
@@ -58,12 +58,7 @@ pub fn command_check(_: &clap::ArgMatches) -> i32 {
   if num_unhealth == 0 { 0 } else { 1 }
 }
 
-
-pub fn command_clean(args: &clap::ArgMatches) -> i32 {
-  let dry_run = args.is_present("dry-run");
-
-  let config = Config::new("dotconfig.toml");
-
+pub fn command_list(config: Config, _: &clap::ArgMatches) -> i32 {
   for (linkfile, content) in config.linkfiles {
     println!("{}",
              ansi_term::Style::new()
@@ -72,24 +67,14 @@ pub fn command_clean(args: &clap::ArgMatches) -> i32 {
                .paint(format!("Loading {} ...", linkfile)));
 
     for ref entry in content {
-      println!("unlink {}", entry.dst.display());
-      if dry_run {
-        println!("fs::remove_file {}", entry.dst.display());
-      } else {
-        // std::fs::remove_file(entry.dst).unwrap();
-      }
+      println!("{} => {}", entry.src.display(), entry.dst.display());
     }
   }
 
   0
 }
 
-
-pub fn command_link(args: &clap::ArgMatches) -> i32 {
-  let dry_run = args.is_present("dry-run");
-
-  let config = Config::new("dotconfig.toml");
-
+pub fn command_link(config: Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
   for (linkfile, content) in config.linkfiles {
     println!("{}",
              ansi_term::Style::new()
@@ -112,10 +97,7 @@ pub fn command_link(args: &clap::ArgMatches) -> i32 {
   0
 }
 
-
-pub fn command_list(_: &clap::ArgMatches) -> i32 {
-  let config = Config::new("dotconfig.toml");
-
+pub fn command_clean(config: Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
   for (linkfile, content) in config.linkfiles {
     println!("{}",
              ansi_term::Style::new()
@@ -124,13 +106,14 @@ pub fn command_list(_: &clap::ArgMatches) -> i32 {
                .paint(format!("Loading {} ...", linkfile)));
 
     for ref entry in content {
-      println!("{} => {}", entry.src.display(), entry.dst.display());
+      println!("unlink {}", entry.dst.display());
+      if dry_run {
+        println!("fs::remove_file {}", entry.dst.display());
+      } else {
+        // std::fs::remove_file(entry.dst).unwrap();
+      }
     }
   }
 
   0
 }
-
-
-// MEMO:
-// std::os::windows::fs::symlink_file("c:\\Users\\xxxx\\.config", "hoge").unwrap();
