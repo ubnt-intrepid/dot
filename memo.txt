@@ -3,17 +3,15 @@ check => check
 clear => clean
 list => list
 set  => link
+init => *
+update => update
 
-# register/unregister conf file(s)
-add
-unlink
-
-# clone from / sync with Git repository. 
-clone
-pull
-update
+clone => clone
+pull => pull
 
 # never supported
+add => ✘
 cd => ✘
 config => ✘
 edit => ✘
+unlink => ✘

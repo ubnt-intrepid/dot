@@ -10,7 +10,7 @@ pub fn wait_exec(cmd: &str,
                  dry_run: bool)
                  -> Result<i32, io::Error> {
   if dry_run {
-    println!("{} {:?}", cmd, args);
+    println!("{} {:?} (@ {:?})", cmd, args, curr_dir);
     return Ok(0);
   }
 
