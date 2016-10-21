@@ -121,6 +121,15 @@ fn make_link<P: AsRef<Path>, Q: AsRef<Path>>(src: P,
   }
 }
 
+fn remove_link<P: AsRef<Path>>(dst: P, dry_run: bool) -> Result<(), std::io::Error> {
+  if dry_run {
+    println!("fs::remove_file {}", dst.as_ref().display());
+    Ok(())
+  } else {
+    std::fs::remove_file(dst)
+  }
+}
+
 pub fn command_link(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
   config.read_linkfiles();
 
@@ -140,7 +149,9 @@ pub fn command_link(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) ->
   0
 }
 
-pub fn command_clean(config: &Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
+pub fn command_clean(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
+  config.read_linkfiles();
+
   for (linkfile, content) in config.linkfiles.iter() {
     println!("{}",
              ansi_term::Style::new()
@@ -150,11 +161,7 @@ pub fn command_clean(config: &Config, _: &clap::ArgMatches, dry_run: bool) -> i3
 
     for ref entry in content {
       println!("unlink {}", entry.dst.display());
-      if dry_run {
-        println!("fs::remove_file {}", entry.dst.display());
-      } else {
-        std::fs::remove_file(&entry.dst).unwrap();
-      }
+      remove_link(&entry.dst, dry_run).unwrap();
     }
   }
 
