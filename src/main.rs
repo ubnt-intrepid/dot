@@ -57,7 +57,7 @@ pub fn command_check(config: &mut Config, _: &clap::ArgMatches) -> i32 {
       if status != EntryStatus::Healthy {
         println!("{} {} ({:?})",
                  ansi_term::Style::new().bold().fg(ansi_term::Colour::Red).paint("✘"),
-                 entry.src.display(),
+                 entry.dst.display(),
                  status);
         num_unhealth += 1;
       } else {
