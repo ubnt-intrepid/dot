@@ -23,4 +23,8 @@ pub fn build_cli() -> App<'static, 'static> {
       .about("Remote all of registered links from home directory"))
     .subcommand(SubCommand::with_name("link")
       .about("Create all of the symbolic links into home directory"))
+    .subcommand(SubCommand::with_name("clone")
+      .about("Clone the repository of dotfiles from remote"))
+    .subcommand(SubCommand::with_name("init")
+      .about("Clone the repository & create all managed links"))
 }

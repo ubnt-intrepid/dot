@@ -4,10 +4,9 @@ use std::fs::File;
 use std::path::Path;
 use std::io::{self, Read, BufRead, BufReader};
 use toml;
-use shellexpand;
 use regex;
 use entry::Entry;
-
+use util;
 
 #[allow(dead_code)]
 pub struct Config {
@@ -23,22 +22,28 @@ impl Config {
     let repo = config.get("clone_repository").unwrap().as_str().unwrap().to_owned();
     let dotdir = config.get("dotdir").unwrap().as_str().unwrap().to_owned();
 
-    env::set_var("clone_repository", expand_full(&repo));
-    env::set_var("dotdir", expand_full(&dotdir));
+    env::set_var("clone_repository", util::expand_full(&repo));
+    env::set_var("dotdir", util::expand_full(&dotdir));
 
-    let mut buf = BTreeMap::new();
+    let mut linkfiles = BTreeMap::new();
     for linkfile in config.get("linkfiles")
       .unwrap()
       .as_slice()
       .unwrap() {
-      let linkfile = expand_full(linkfile.as_str().unwrap());
-      buf.insert(linkfile.clone(), parse_linkfile(&linkfile, &dotdir));
+      let linkfile = util::expand_full(linkfile.as_str().unwrap());
+      linkfiles.insert(linkfile, Vec::new());
     }
 
     Config {
       repo: repo,
       dotdir: dotdir,
-      linkfiles: buf,
+      linkfiles: linkfiles,
+    }
+  }
+
+  pub fn read_linkfiles(&mut self) {
+    for (linkfile, links) in self.linkfiles.iter_mut() {
+      *links = parse_linkfile(&linkfile, &self.dotdir);
     }
   }
 }
@@ -58,11 +63,11 @@ fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec
     }
     let token: Vec<_> = line.split(",").map(|s| s.trim().to_owned()).collect();
 
-    let src = expand_full(&dotdir.as_ref().join(&token[0]).to_str().unwrap());
+    let src = util::expand_full(&dotdir.as_ref().join(&token[0]).to_str().unwrap());
 
-    let mut dst = expand_full(&token[1]);
+    let mut dst = util::expand_full(&token[1]);
     if Path::new(&dst).is_relative() {
-      dst = expand_full(&format!("$HOME/{}", dst));
+      dst = util::expand_full(&format!("$HOME/{}", dst));
     }
 
     buf.push(Entry {
@@ -72,10 +77,6 @@ fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec
   }
 
   buf
-}
-
-fn expand_full(s: &str) -> String {
-  shellexpand::full(s).unwrap().into_owned()
 }
 
 fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::Table, io::Error> {

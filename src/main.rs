@@ -7,31 +7,49 @@ extern crate toml;
 mod cli;
 mod config;
 mod entry;
+mod util;
 
+use std::path::Path;
 use config::Config;
 use entry::EntryStatus;
 
 
 pub fn main() {
-  let config = Config::new("dotconfig.toml");
+  let ref mut config = Config::new("dotconfig.toml");
 
   let matches = cli::build_cli().get_matches();
   let dry_run = matches.is_present("dry-run");
   let exitcode = match matches.subcommand() {
     ("list", Some(m)) => command_list(config, m),
     ("check", Some(m)) => command_check(config, m),
+    ("clone", Some(m)) => command_clone(config, m, dry_run),
     ("clean", Some(m)) => command_clean(config, m, dry_run),
     ("link", Some(m)) => command_link(config, m, dry_run),
+    ("init", Some(m)) => command_update(config, m, dry_run),
     (_, _) => unreachable!(),
   };
   std::process::exit(exitcode);
 }
 
+pub fn command_clone(config: &Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
+  if Path::new(&config.dotdir).exists() {
+    println!("the repository already exists");
+    return 1;
+  }
 
-pub fn command_check(config: Config, _: &clap::ArgMatches) -> i32 {
+  let dotdir = util::expand_full(&config.dotdir);
+
+  util::wait_exec("git", &["clone", &config.repo, &dotdir], None, dry_run).unwrap();
+  0
+}
+
+
+pub fn command_check(config: &mut Config, _: &clap::ArgMatches) -> i32 {
+  config.read_linkfiles();
+
   let mut num_unhealth = 0;
 
-  for (linkfile, entries) in config.linkfiles {
+  for (linkfile, entries) in config.linkfiles.iter() {
     println!("{}",
              ansi_term::Style::new()
                .bold()
@@ -58,8 +76,10 @@ pub fn command_check(config: Config, _: &clap::ArgMatches) -> i32 {
   if num_unhealth == 0 { 0 } else { 1 }
 }
 
-pub fn command_list(config: Config, _: &clap::ArgMatches) -> i32 {
-  for (linkfile, content) in config.linkfiles {
+pub fn command_list(config: &mut Config, _: &clap::ArgMatches) -> i32 {
+  config.read_linkfiles();
+
+  for (linkfile, content) in config.linkfiles.iter() {
     println!("{}",
              ansi_term::Style::new()
                .bold()
@@ -74,8 +94,10 @@ pub fn command_list(config: Config, _: &clap::ArgMatches) -> i32 {
   0
 }
 
-pub fn command_link(config: Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
-  for (linkfile, content) in config.linkfiles {
+pub fn command_link(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
+  config.read_linkfiles();
+
+  for (linkfile, content) in config.linkfiles.iter() {
     println!("{}",
              ansi_term::Style::new()
                .bold()
@@ -97,8 +119,8 @@ pub fn command_link(config: Config, _: &clap::ArgMatches, dry_run: bool) -> i32 
   0
 }
 
-pub fn command_clean(config: Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
-  for (linkfile, content) in config.linkfiles {
+pub fn command_clean(config: &Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
+  for (linkfile, content) in config.linkfiles.iter() {
     println!("{}",
              ansi_term::Style::new()
                .bold()
@@ -116,4 +138,12 @@ pub fn command_clean(config: Config, _: &clap::ArgMatches, dry_run: bool) -> i32
   }
 
   0
+}
+
+pub fn command_update(config: &mut Config, args: &clap::ArgMatches, dry_run: bool) -> i32 {
+  let e1 = command_clone(config, args, dry_run);
+  if e1 != 0 {
+    return e1;
+  }
+  command_link(config, args, dry_run)
 }
