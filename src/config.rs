@@ -15,8 +15,10 @@ pub struct Config {
 }
 
 impl Config {
-  pub fn new<P: AsRef<Path>>(path: P) -> Config {
-    let config = read_toml(path).unwrap();
+  pub fn new() -> Config {
+    let path = "~/.dotconfig.toml";
+    let extracted_path = util::expand_full(path);
+    let config = read_toml(&extracted_path).unwrap();
 
     let repo = config.get("clone_repository").unwrap().as_str().unwrap().to_owned();
     let dotdir = config.get("dotdir").unwrap().as_str().unwrap().to_owned();

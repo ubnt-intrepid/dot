@@ -15,7 +15,7 @@ use entry::EntryStatus;
 
 
 pub fn main() {
-  let ref mut config = Config::new("dotconfig.toml");
+  let ref mut config = Config::new();
 
   let matches = cli::build_cli().get_matches();
   let dry_run = matches.is_present("dry-run");
