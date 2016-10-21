@@ -37,8 +37,12 @@ pub fn expand_full(s: &str) -> String {
 
 #[cfg(windows)]
 fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<(), io::Error> {
-  use std::os::windows::fs::symlink_file;
-  symlink_file(src, dst)
+  use std::os::windows::fs;
+  if src.as_ref().is_dir() {
+    fs::symlink_dir(src, dst)
+  } else {
+    fs::symlink_file(src, dst)
+  }
 }
 
 #[cfg(not(windows))]
