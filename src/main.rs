@@ -26,8 +26,8 @@ pub fn command_list(_: &clap::ArgMatches) -> i32 {
 
   for (linkfile, content) in config.get_linkfiles() {
     println!("Loading {} ...", linkfile);
-    for &(ref dotfile, ref orig) in content {
-      println!("{},{}", dotfile, orig);
+    for ref entry in content {
+      println!("{},{}", entry.source(), entry.dest());
     }
   }
 

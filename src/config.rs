@@ -7,11 +7,27 @@ use shellexpand;
 use regex;
 
 
+#[derive(Clone)]
+pub struct Entry {
+  src: String,
+  dst: String,
+}
+
+impl Entry {
+  pub fn source(&self) -> &String {
+    &self.src
+  }
+  pub fn dest(&self) -> &String {
+    &self.dst
+  }
+}
+
+
 #[allow(dead_code)]
 pub struct Config {
   repo: String,
   dotdir: String,
-  linkfiles: BTreeMap<String, Vec<(String, String)>>,
+  linkfiles: BTreeMap<String, Vec<Entry>>,
 }
 
 impl Config {
@@ -42,12 +58,12 @@ impl Config {
     }
   }
 
-  pub fn get_linkfiles<'a>(&'a self) -> &'a BTreeMap<String, Vec<(String, String)>> {
+  pub fn get_linkfiles<'a>(&'a self) -> &'a BTreeMap<String, Vec<Entry>> {
     &self.linkfiles
   }
 }
 
-fn parse_linkfile<P: AsRef<Path>>(linkfile: P) -> Vec<(String, String)> {
+fn parse_linkfile<P: AsRef<Path>>(linkfile: P) -> Vec<Entry> {
   let file = File::open(linkfile.as_ref()).unwrap();
   let file = BufReader::new(file);
 
@@ -62,7 +78,10 @@ fn parse_linkfile<P: AsRef<Path>>(linkfile: P) -> Vec<(String, String)> {
     }
 
     let token: Vec<_> = line.split(",").map(|s| s.trim().to_owned()).collect();
-    buf.push((token[0].clone(), token[1].clone()));
+    buf.push(Entry {
+      src: token[0].clone(),
+      dst: token[1].clone(),
+    });
   }
 
   buf
