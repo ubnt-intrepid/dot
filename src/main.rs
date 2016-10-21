@@ -94,6 +94,33 @@ pub fn command_list(config: &mut Config, _: &clap::ArgMatches) -> i32 {
   0
 }
 
+#[cfg(windows)]
+fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<(), std::io::Error> {
+  use std::os::windows::fs::symlink_file;
+  symlink_file(src, dst)
+}
+
+#[cfg(not(windows))]
+fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<(), std::io::Error> {
+  use std::os::unix::fs::symlink;
+  symlink(src, dst)
+}
+
+fn make_link<P: AsRef<Path>, Q: AsRef<Path>>(src: P,
+                                             dst: Q,
+                                             dry_run: bool)
+                                             -> Result<(), std::io::Error> {
+  if dry_run {
+    println!("make_link({}, {})",
+             src.as_ref().display(),
+             dst.as_ref().display());
+    Ok(())
+  } else {
+    try!(std::fs::create_dir_all(dst.as_ref().parent().unwrap()));
+    symlink(src, dst)
+  }
+}
+
 pub fn command_link(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) -> i32 {
   config.read_linkfiles();
 
@@ -106,13 +133,7 @@ pub fn command_link(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) ->
 
     for ref entry in content {
       println!("link {} => {}", entry.src.display(), entry.dst.display());
-      if dry_run {
-        println!("fs::soft_link {}, {}",
-                 entry.src.display(),
-                 entry.dst.display());
-      } else {
-        // std::fs::soft_link(entry.src, entry.dst).unwrap();
-      }
+      make_link(&entry.src, &entry.dst, dry_run).unwrap();
     }
   }
 
@@ -132,7 +153,7 @@ pub fn command_clean(config: &Config, _: &clap::ArgMatches, dry_run: bool) -> i3
       if dry_run {
         println!("fs::remove_file {}", entry.dst.display());
       } else {
-        // std::fs::remove_file(entry.dst).unwrap();
+        std::fs::remove_file(&entry.dst).unwrap();
       }
     }
   }
