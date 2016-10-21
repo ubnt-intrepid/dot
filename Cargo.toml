@@ -10,4 +10,6 @@ clap = "^2.13.0"
 
 [dependencies]
 clap = "^2.13.0"
-toml = "*"
+toml = "^0.2.1"
+shellexpand = "0.1.0"
+regex = "^0.1.77"

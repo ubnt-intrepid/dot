@@ -1,4 +1,6 @@
-# vim: set ft=toml ts=2 sw=2 et :
-
-[general]
-.vimrc = "vimrc"
+clone_repository = "https://github.com/ubnt-intrepid/.dotfiles.git"
+dotdir = "$HOME/.dotfiles"
+linkfiles = [
+  "$HOME/.config/dot/dotlink",
+  "$HOME/.config/dot/dotlink.local"
+]
