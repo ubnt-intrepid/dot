@@ -17,6 +17,8 @@ pub fn main() {
 
   let exitcode = match matches.subcommand() {
     ("check", Some(m)) => command_check(m),
+    ("clean", Some(m)) => command_clean(m),
+    ("link", Some(m)) => command_link(m),
     ("list", Some(m)) => command_list(m),
     (_, _) => unreachable!(),
   };
@@ -54,6 +56,60 @@ pub fn command_check(_: &clap::ArgMatches) -> i32 {
   }
 
   if num_unhealth == 0 { 0 } else { 1 }
+}
+
+
+pub fn command_clean(args: &clap::ArgMatches) -> i32 {
+  let dry_run = args.is_present("dry-run");
+
+  let config = Config::new("dotconfig.toml");
+
+  for (linkfile, content) in config.linkfiles {
+    println!("{}",
+             ansi_term::Style::new()
+               .bold()
+               .fg(ansi_term::Colour::Blue)
+               .paint(format!("Loading {} ...", linkfile)));
+
+    for ref entry in content {
+      println!("unlink {}", entry.dst.display());
+      if dry_run {
+        println!("fs::remove_file {}", entry.dst.display());
+      } else {
+        // std::fs::remove_file(entry.dst).unwrap();
+      }
+    }
+  }
+
+  0
+}
+
+
+pub fn command_link(args: &clap::ArgMatches) -> i32 {
+  let dry_run = args.is_present("dry-run");
+
+  let config = Config::new("dotconfig.toml");
+
+  for (linkfile, content) in config.linkfiles {
+    println!("{}",
+             ansi_term::Style::new()
+               .bold()
+               .fg(ansi_term::Colour::Blue)
+               .paint(format!("Loading {} ...", linkfile)));
+
+    for ref entry in content {
+      println!("link {} => {}", entry.src.display(), entry.dst.display());
+      if dry_run {
+        println!("fs::soft_link {}, {}",
+                 entry.src.display(),
+                 entry.dst.display());
+      } else {
+        // std::fs::soft_link(entry.src, entry.dst).unwrap();
+      }
+    }
+  }
+
+  0
 }
 
 
