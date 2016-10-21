@@ -2,6 +2,7 @@ extern crate clap;
 extern crate toml;
 extern crate shellexpand;
 extern crate regex;
+extern crate ansi_term;
 
 mod cli;
 mod config;
@@ -25,9 +26,13 @@ pub fn command_list(_: &clap::ArgMatches) -> i32 {
   let config = Config::new("dotconfig.toml");
 
   for (linkfile, content) in config.get_linkfiles() {
-    println!("Loading {} ...", linkfile);
+    println!("{}",
+             ansi_term::Style::new()
+               .bold()
+               .fg(ansi_term::Colour::Blue)
+               .paint(format!("Loading {} ...", linkfile)));
     for ref entry in content {
-      println!("{},{}", entry.source(), entry.dest());
+      println!("{},{}", entry.source().display(), entry.dest().display());
     }
   }
 

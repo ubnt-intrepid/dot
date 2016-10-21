@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::{Read, BufRead, BufReader};
 use toml;
@@ -9,16 +9,16 @@ use regex;
 
 #[derive(Clone)]
 pub struct Entry {
-  src: String,
-  dst: String,
+  src: PathBuf,
+  dst: PathBuf,
 }
 
 impl Entry {
-  pub fn source(&self) -> &String {
-    &self.src
+  pub fn source(&self) -> &Path {
+    self.src.as_path()
   }
-  pub fn dest(&self) -> &String {
-    &self.dst
+  pub fn dest(&self) -> &Path {
+    self.dst.as_path()
   }
 }
 
@@ -48,7 +48,7 @@ impl Config {
       .unwrap()
       .iter()
       .map(|v| shellexpand::full(v.as_str().unwrap()).unwrap().into_owned()) {
-      buf.insert(linkfile.clone(), parse_linkfile(&linkfile));
+      buf.insert(linkfile.clone(), parse_linkfile(&linkfile, &dotdir));
     }
 
     Config {
@@ -63,7 +63,7 @@ impl Config {
   }
 }
 
-fn parse_linkfile<P: AsRef<Path>>(linkfile: P) -> Vec<Entry> {
+fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec<Entry> {
   let file = File::open(linkfile.as_ref()).unwrap();
   let file = BufReader::new(file);
 
@@ -78,9 +78,23 @@ fn parse_linkfile<P: AsRef<Path>>(linkfile: P) -> Vec<Entry> {
     }
 
     let token: Vec<_> = line.split(",").map(|s| s.trim().to_owned()).collect();
+
+    let src: PathBuf = dotdir.as_ref().join(token[0].clone());
+    let src = Path::new(&shellexpand::full(src.to_str().unwrap()).unwrap().into_owned())
+      .to_path_buf();
+
+    let dst = {
+      let dst = shellexpand::full(&token[1]).unwrap().into_owned();
+      if Path::new(&dst).is_absolute() {
+        Path::new(&dst).to_path_buf()
+      } else {
+        Path::new(&shellexpand::full("$HOME").unwrap().into_owned()).join(token[1].clone())
+      }
+    };
+
     buf.push(Entry {
-      src: token[0].clone(),
-      dst: token[1].clone(),
+      src: src,
+      dst: dst,
     });
   }
 
