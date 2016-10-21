@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::env;
 use std::fs::File;
 use std::path::Path;
 use std::io::{self, Read, BufRead, BufReader};
@@ -22,12 +23,15 @@ impl Config {
     let repo = config.get("clone_repository").unwrap().as_str().unwrap().to_owned();
     let dotdir = config.get("dotdir").unwrap().as_str().unwrap().to_owned();
 
+    env::set_var("clone_repository", expand_full(&repo));
+    env::set_var("dotdir", expand_full(&dotdir));
+
     let mut buf = BTreeMap::new();
     for linkfile in config.get("linkfiles")
       .unwrap()
       .as_slice()
       .unwrap() {
-      let linkfile = shellexpand::full(linkfile.as_str().unwrap()).unwrap().into_owned();
+      let linkfile = expand_full(linkfile.as_str().unwrap());
       buf.insert(linkfile.clone(), parse_linkfile(&linkfile, &dotdir));
     }
 

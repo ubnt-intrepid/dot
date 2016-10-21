@@ -1,6 +1,8 @@
 clone_repository = "https://github.com/ubnt-intrepid/.dotfiles.git"
+
 dotdir = "$HOME/.dotfiles"
+
 linkfiles = [
-  "$HOME/.config/dot/dotlink",
-  "$HOME/.config/dot/dotlink.local"
+  "$dotdir/dotlink",
+  "$dotdir/dotlink.linux"
 ]
