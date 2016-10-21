@@ -54,7 +54,7 @@ pub fn command_check(config: &mut Config, _: &clap::ArgMatches) -> i32 {
 
     for ref entry in entries {
       let status = entry.status();
-      if status != EntryStatus::Health {
+      if status != EntryStatus::Healthy {
         println!("{} {} ({:?})",
                  ansi_term::Style::new().bold().fg(ansi_term::Colour::Red).paint("✘"),
                  entry.src.display(),
@@ -63,8 +63,8 @@ pub fn command_check(config: &mut Config, _: &clap::ArgMatches) -> i32 {
       } else {
         println!("{} {} (=> {})",
                  ansi_term::Style::new().bold().fg(ansi_term::Colour::Green).paint("✓"),
-                 entry.src.display(),
-                 entry.dst.display());
+                 entry.dst.display(),
+                 entry.src.display());
       }
     }
   }
@@ -81,7 +81,7 @@ pub fn command_list(config: &mut Config, _: &clap::ArgMatches) -> i32 {
                .paint(format!("Loading {} ...", linkfile)));
 
     for ref entry in content {
-      println!("{} => {}", entry.src.display(), entry.dst.display());
+      println!("  {} => {}", entry.dst.display(), entry.src.display());
     }
   }
 
@@ -97,7 +97,7 @@ pub fn command_link(config: &mut Config, _: &clap::ArgMatches, dry_run: bool) ->
                .paint(format!("Loading {} ...", linkfile)));
 
     for ref entry in content {
-      if entry.status() == EntryStatus::Health {
+      if entry.status() == EntryStatus::Healthy {
         continue;
       }
       println!("link {} => {}", entry.src.display(), entry.dst.display());

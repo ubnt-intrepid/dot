@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntryStatus {
-  Health,
+  Healthy,
   LinkNotCreated,
   NotSymLink,
   WrongLinkPath,
@@ -26,7 +26,7 @@ impl Entry {
     }
 
     if self.src == self.dst.read_link().unwrap() {
-      EntryStatus::Health
+      EntryStatus::Healthy
     } else {
       EntryStatus::WrongLinkPath
     }
