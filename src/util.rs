@@ -5,6 +5,7 @@ use std::path::Path;
 use shellexpand;
 
 
+#[allow(dead_code)]
 pub fn wait_exec(cmd: &str,
                  args: &[&str],
                  curr_dir: Option<&Path>,

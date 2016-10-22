@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::env;
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, MAIN_SEPARATOR};
 use std::io::{self, Read};
 use toml;
 use entry::Entry;
@@ -59,11 +59,13 @@ fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec
   for (ref key, ref val) in parsed.iter() {
     if let Some(val) = val.as_str() {
       let src = util::expand_full(&format!("{}/{}", dotdir.as_ref().display(), key));
+      let src = src.replace("/", &format!("{}", MAIN_SEPARATOR));
 
       let mut dst = util::expand_full(val);
       if Path::new(&dst).is_relative() {
         dst = util::expand_full(&format!("$HOME/{}", val));
       }
+      let dst = dst.replace("/", &format!("{}", MAIN_SEPARATOR));
 
       buf.push(Entry {
         src: Path::new(&src).to_path_buf(),
