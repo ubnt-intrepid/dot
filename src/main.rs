@@ -29,22 +29,21 @@ pub fn main() {
 
   let matches = cli::build_cli().get_matches();
 
-  let dry_run = matches.is_present("dry-run");
-  let verbose = matches.is_present("verbose");
-
   let ref mut config = Config::new();
 
   let exitcode = match matches.subcommand() {
-    ("check", Some(m)) => command_check(config, m, verbose),
-    ("link", Some(m)) => command_link(config, m, dry_run, verbose),
-    ("clean", Some(m)) => command_clean(config, m, dry_run, verbose),
+    ("check", Some(m)) => command_check(config, m),
+    ("link", Some(m)) => command_link(config, m),
+    ("clean", Some(m)) => command_clean(config, m),
     (_, _) => unreachable!(),
   };
   std::process::exit(exitcode);
 }
 
 
-pub fn command_check(config: &mut Config, _: &clap::ArgMatches, verbose: bool) -> i32 {
+pub fn command_check(config: &mut Config, args: &clap::ArgMatches) -> i32 {
+  let verbose = args.is_present("verbose");
+
   let mut num_unhealth = 0;
   for (linkfile, entries) in config.read_linkfiles() {
     if verbose {
@@ -77,11 +76,10 @@ pub fn command_check(config: &mut Config, _: &clap::ArgMatches, verbose: bool) -
   num_unhealth
 }
 
-pub fn command_link(config: &mut Config,
-                    _: &clap::ArgMatches,
-                    dry_run: bool,
-                    verbose: bool)
-                    -> i32 {
+pub fn command_link(config: &mut Config, args: &clap::ArgMatches) -> i32 {
+  let dry_run = args.is_present("dry-run");
+  let verbose = args.is_present("verbose");
+
   for (linkfile, content) in config.read_linkfiles() {
     if verbose {
       println!("{}",
@@ -108,11 +106,10 @@ pub fn command_link(config: &mut Config,
   0
 }
 
-pub fn command_clean(config: &mut Config,
-                     _: &clap::ArgMatches,
-                     dry_run: bool,
-                     verbose: bool)
-                     -> i32 {
+pub fn command_clean(config: &mut Config, args: &clap::ArgMatches) -> i32 {
+  let dry_run = args.is_present("dry-run");
+  let verbose = args.is_present("verbose");
+
   for (linkfile, content) in config.read_linkfiles() {
     if verbose {
       println!("{}",
