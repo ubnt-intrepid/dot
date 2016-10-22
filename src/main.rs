@@ -1,6 +1,5 @@
 extern crate ansi_term;
 extern crate clap;
-extern crate regex;
 extern crate shellexpand;
 extern crate toml;
 

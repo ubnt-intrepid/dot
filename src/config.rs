@@ -2,9 +2,8 @@ use std::collections::BTreeMap;
 use std::env;
 use std::fs::File;
 use std::path::Path;
-use std::io::{self, Read, BufRead, BufReader};
+use std::io::{self, Read};
 use toml;
-use regex;
 use entry::Entry;
 use util;
 
@@ -54,30 +53,23 @@ impl Config {
 
 
 fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec<Entry> {
-  let file = File::open(linkfile.as_ref()).unwrap();
-  let file = BufReader::new(file);
-
-  let re = regex::Regex::new(r"^\s*#.*$|^\s*$").unwrap();
+  let parsed = read_toml(linkfile).unwrap();
 
   let mut buf = Vec::new();
-  for line in file.lines() {
-    let line = re.replace(&line.unwrap(), "");
-    if line == "" {
-      continue;
+  for (ref key, ref val) in parsed.iter() {
+    if let Some(val) = val.as_str() {
+      let src = util::expand_full(&format!("{}/{}", dotdir.as_ref().display(), key));
+
+      let mut dst = util::expand_full(val);
+      if Path::new(&dst).is_relative() {
+        dst = util::expand_full(&format!("$HOME/{}", val));
+      }
+
+      buf.push(Entry {
+        src: Path::new(&src).to_path_buf(),
+        dst: Path::new(&dst).to_path_buf(),
+      });
     }
-    let token: Vec<_> = line.split(",").map(|s| s.trim().to_owned()).collect();
-
-    let src = util::expand_full(&dotdir.as_ref().join(&token[0]).to_str().unwrap());
-
-    let mut dst = util::expand_full(&token[1]);
-    if Path::new(&dst).is_relative() {
-      dst = util::expand_full(&format!("$HOME/{}", dst));
-    }
-
-    buf.push(Entry {
-      src: Path::new(&src).to_path_buf(),
-      dst: Path::new(&dst).to_path_buf(),
-    });
   }
 
   buf

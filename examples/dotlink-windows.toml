@@ -1,0 +1,9 @@
+mintty = "~/.config/mintty"
+
+atom                   = "~/.config/atom"
+"vscode/settings.json" = "$APPDATA/Code/User/settings.json"
+"vscode/locale.json"   = "$APPDATA/Code/User/locale.json"
+
+powershell = "~/Documents/WindowsPowerShell"
+consolez   = "$APPDATA/Console"
+ConEmu.xml = "$APPDATA/ConEmu.xml"
