@@ -67,11 +67,26 @@ pub fn make_link<P, Q>(src: P, dst: Q, dry_run: bool) -> Result<(), io::Error>
   }
 }
 
+
+#[cfg(windows)]
+fn unlink<P: AsRef<Path>>(dst: P) -> Result<(), io::Error> {
+  if dst.as_ref().is_dir() {
+    fs::remove_dir(dst)
+  } else {
+    fs::remove_file(dst)
+  }
+}
+
+#[cfg(not(windows))]
+fn unlink<P: AsRef<Path>>(dst: P) -> Result<(), io::Error> {
+  fs::remove_file(dst)
+}
+
 pub fn remove_link<P: AsRef<Path>>(dst: P, dry_run: bool) -> Result<(), io::Error> {
   if dry_run {
     println!("fs::remove_file {}", dst.as_ref().display());
     Ok(())
   } else {
-    fs::remove_file(dst)
+    unlink(dst)
   }
 }
