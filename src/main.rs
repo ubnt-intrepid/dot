@@ -35,11 +35,18 @@ pub fn main() {
     ("check", Some(m)) => command_check(config, m),
     ("link", Some(m)) => command_link(config, m),
     ("clean", Some(m)) => command_clean(config, m),
+    ("dir", Some(m)) => command_dir(config, m),
     (_, _) => unreachable!(),
   };
   std::process::exit(exitcode);
 }
 
+
+pub fn command_dir(config: &mut Config, _: &clap::ArgMatches) -> i32 {
+  let dotdir = config.dotdir.replace("/", &format!("{}", std::path::MAIN_SEPARATOR));
+  println!("{}", util::expand_full(&dotdir));
+  0
+}
 
 pub fn command_check(config: &mut Config, args: &clap::ArgMatches) -> i32 {
   let verbose = args.is_present("verbose");

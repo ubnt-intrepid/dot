@@ -19,6 +19,9 @@ _dot() {
             clean)
                 cmd+="_clean"
                 ;;
+            dir)
+                cmd+="_dir"
+                ;;
             help)
                 cmd+="_help"
                 ;;
@@ -32,7 +35,7 @@ _dot() {
 
     case "${cmd}" in
         dot)
-            opts=" -h -V  --help --version   check link clean help"
+            opts=" -h -V  --help --version   check link clean dir help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -64,6 +67,21 @@ _dot() {
             ;;
         dot_clean)
             opts=" -n -v -h -V  --dry-run --verbose --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
+        dot_dir)
+            opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
