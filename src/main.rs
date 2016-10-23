@@ -10,7 +10,6 @@ mod util;
 
 use std::env;
 use config::Config;
-use entry::EntryStatus;
 
 
 #[cfg(windows)]
@@ -62,20 +61,8 @@ pub fn command_check(config: &mut Config, args: &clap::ArgMatches) -> i32 {
     }
 
     for ref entry in entries {
-      let status = entry.status();
-      if status != EntryStatus::Healthy {
-        println!("{} {} ({:?})",
-                 ansi_term::Style::new().bold().fg(ansi_term::Colour::Red).paint("✘"),
-                 entry.dst.display(),
-                 status);
+      if entry.check(verbose).unwrap() == false {
         num_unhealth += 1;
-      } else {
-        if verbose {
-          println!("{} {}\n  => {}",
-                   ansi_term::Style::new().bold().fg(ansi_term::Colour::Green).paint("✓"),
-                   entry.dst.display(),
-                   entry.src.display());
-        }
       }
     }
   }
@@ -97,16 +84,7 @@ pub fn command_link(config: &mut Config, args: &clap::ArgMatches) -> i32 {
     }
 
     for ref entry in content {
-      if entry.status() == EntryStatus::Healthy {
-        if verbose {
-          println!("{}\n  the link has already existed.", entry.dst.display());
-        }
-        continue;
-      }
-      if verbose {
-        println!("{}\n  => {}", entry.dst.display(), entry.src.display());
-      }
-      util::make_link(&entry.src, &entry.dst, dry_run).unwrap();
+      entry.mklink(dry_run, verbose).unwrap();
     }
   }
 
@@ -127,10 +105,7 @@ pub fn command_clean(config: &mut Config, args: &clap::ArgMatches) -> i32 {
     }
 
     for ref entry in content {
-      if verbose {
-        println!("unlink {}", entry.dst.display());
-      }
-      util::remove_link(&entry.dst, dry_run).unwrap();
+      entry.unlink(dry_run, verbose).unwrap();
     }
   }
 
