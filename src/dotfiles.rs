@@ -1,8 +1,4 @@
-use std::env;
-use std::fs::File;
-use std::path::{self, Path, PathBuf};
-use std::io::{self, Read};
-use toml;
+use std::path::{Path, PathBuf};
 use entry::Entry;
 use util;
 
@@ -12,31 +8,14 @@ pub struct Dotfiles {
 }
 
 impl Dotfiles {
-  pub fn new() -> Dotfiles {
-    // load configuration file.
-    let path = "~/.dotconfig.toml";
-    let extracted_path = util::expand_full(path);
-    let config = read_toml(&extracted_path).unwrap();
-
-    //
-    let dotdir = config.get("dotdir").unwrap().as_str().unwrap().to_owned();
-    let dotdir = dotdir.replace("/", &format!("{}", path::MAIN_SEPARATOR));
-    let dotdir = util::expand_full(&dotdir);
-    let dotdir = Path::new(&dotdir).to_path_buf();
-
-    env::set_var("dotdir", dotdir.as_os_str());
-
+  pub fn new(root_dir: PathBuf, linkfiles: &[PathBuf]) -> Dotfiles {
     let mut entries = Vec::new();
-    for linkfile in config.get("linkfiles")
-      .unwrap()
-      .as_slice()
-      .unwrap() {
-      let linkfile = util::expand_full(linkfile.as_str().unwrap());
-      entries.extend(parse_linkfile(&linkfile, &dotdir));
+    for linkfile in linkfiles {
+      entries.extend(parse_linkfile(&linkfile, &root_dir));
     }
 
     Dotfiles {
-      _root_dir: dotdir,
+      _root_dir: root_dir,
       _entries: entries,
     }
   }
@@ -52,7 +31,7 @@ impl Dotfiles {
 
 
 fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec<Entry> {
-  let parsed = read_toml(linkfile).unwrap();
+  let parsed = util::read_toml(linkfile).unwrap();
 
   let mut buf = Vec::new();
   for (ref key, ref val) in parsed.iter() {
@@ -69,16 +48,4 @@ fn parse_linkfile<P: AsRef<Path>, Q: AsRef<Path>>(linkfile: P, dotdir: Q) -> Vec
   }
 
   buf
-}
-
-fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::Table, io::Error> {
-  let mut file = try!(File::open(path));
-
-  let mut buf = Vec::new();
-  try!(file.read_to_end(&mut buf));
-
-  let content = String::from_utf8_lossy(&buf[..]).into_owned();
-  toml::Parser::new(&content).parse().ok_or(io::Error::new(io::ErrorKind::Other,
-                                                           "failed to parse configuration file \
-                                                            as TOML"))
 }

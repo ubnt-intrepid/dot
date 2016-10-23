@@ -1,8 +1,9 @@
-use std::io;
-use std::fs;
+use std::io::{self, Read};
+use std::fs::{self, File};
 use std::process::{Command, Stdio};
 use std::path::Path;
 use shellexpand;
+use toml;
 
 
 #[allow(dead_code)]
@@ -89,4 +90,17 @@ pub fn remove_link<P: AsRef<Path>>(dst: P, dry_run: bool) -> Result<(), io::Erro
   } else {
     unlink(dst)
   }
+}
+
+
+pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::Table, io::Error> {
+  let mut file = try!(File::open(path));
+
+  let mut buf = Vec::new();
+  try!(file.read_to_end(&mut buf));
+
+  let content = String::from_utf8_lossy(&buf[..]).into_owned();
+  toml::Parser::new(&content).parse().ok_or(io::Error::new(io::ErrorKind::Other,
+                                                           "failed to parse configuration file \
+                                                            as TOML"))
 }
