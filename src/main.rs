@@ -4,31 +4,22 @@ extern crate shellexpand;
 extern crate toml;
 
 mod cli;
-mod config;
+mod dotfiles;
 mod entry;
 mod util;
 
 use std::env;
-use config::Config;
-
-
-#[cfg(windows)]
-fn startup() {
-  if env::var("HOME").is_err() {
-    env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
-  }
-}
-
-#[cfg(not(windows))]
-fn startup() {}
+use dotfiles::Dotfiles;
 
 
 pub fn main() {
-  startup();
+  if env::var("HOME").is_err() {
+    env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
+  }
 
   let matches = cli::build_cli().get_matches();
 
-  let ref mut config = Config::new();
+  let ref mut config = Dotfiles::new();
 
   let exitcode = match matches.subcommand() {
     ("check", Some(m)) => command_check(config, m),
@@ -41,72 +32,41 @@ pub fn main() {
 }
 
 
-pub fn command_dir(config: &mut Config, _: &clap::ArgMatches) -> i32 {
-  let dotdir = config.dotdir.replace("/", &format!("{}", std::path::MAIN_SEPARATOR));
-  println!("{}", util::expand_full(&dotdir));
+pub fn command_dir(config: &mut Dotfiles, _: &clap::ArgMatches) -> i32 {
+  println!("{}", config.root_dir().display());
   0
 }
 
-pub fn command_check(config: &mut Config, args: &clap::ArgMatches) -> i32 {
+pub fn command_check(config: &mut Dotfiles, args: &clap::ArgMatches) -> i32 {
   let verbose = args.is_present("verbose");
 
   let mut num_unhealth = 0;
-  for (linkfile, entries) in config.read_linkfiles() {
-    if verbose {
-      println!("{}",
-               ansi_term::Style::new()
-                 .bold()
-                 .fg(ansi_term::Colour::Blue)
-                 .paint(format!("Loading {} ...", linkfile)));
-    }
-
-    for ref entry in entries {
-      if entry.check(verbose).unwrap() == false {
-        num_unhealth += 1;
-      }
+  for entry in config.entries() {
+    if entry.check(verbose).unwrap() == false {
+      num_unhealth += 1;
     }
   }
 
   num_unhealth
 }
 
-pub fn command_link(config: &mut Config, args: &clap::ArgMatches) -> i32 {
+pub fn command_link(config: &mut Dotfiles, args: &clap::ArgMatches) -> i32 {
   let dry_run = args.is_present("dry-run");
   let verbose = args.is_present("verbose");
 
-  for (linkfile, content) in config.read_linkfiles() {
-    if verbose {
-      println!("{}",
-               ansi_term::Style::new()
-                 .bold()
-                 .fg(ansi_term::Colour::Blue)
-                 .paint(format!("Loading {} ...", linkfile)));
-    }
-
-    for ref entry in content {
-      entry.mklink(dry_run, verbose).unwrap();
-    }
+  for entry in config.entries() {
+    entry.mklink(dry_run, verbose).unwrap();
   }
 
   0
 }
 
-pub fn command_clean(config: &mut Config, args: &clap::ArgMatches) -> i32 {
+pub fn command_clean(config: &mut Dotfiles, args: &clap::ArgMatches) -> i32 {
   let dry_run = args.is_present("dry-run");
   let verbose = args.is_present("verbose");
 
-  for (linkfile, content) in config.read_linkfiles() {
-    if verbose {
-      println!("{}",
-               ansi_term::Style::new()
-                 .bold()
-                 .fg(ansi_term::Colour::Blue)
-                 .paint(format!("Loading {} ...", linkfile)));
-    }
-
-    for ref entry in content {
-      entry.unlink(dry_run, verbose).unwrap();
-    }
+  for entry in config.entries() {
+    entry.unlink(dry_run, verbose).unwrap();
   }
 
   0
