@@ -1,0 +1,28 @@
+# vim: set ft=toml ts=2 sw=2 et :
+
+[general]
+"tmux.conf"     = "~/.tmux.conf"
+gitconfig       = "~/.gitconfig"
+tigrc           = "~/.tigrc"
+zsh             = "~/.config/zsh"
+"zsh/zshenv"    = "~/.zshenv"
+"zsh/zshrc"     = "~/.zshrc"
+vim             = "~/.config/vim"
+"vim/vimrc"     = "~/.vimrc"
+"vim/gvimrc"    = "~/.gvimrc"
+
+[windows]
+atom                   = "~/.config/atom"
+mintty                 = "~/.config/mintty"
+"vscode/settings.json" = "$APPDATA/Code/User/settings.json"
+"vscode/locale.json"   = "$APPDATA/Code/User/locale.json"
+powershell             = "~/Documents/WindowsPowerShell"
+consolez               = "$APPDATA/Console"
+"ConEmu.xml"           = "$APPDATA/ConEmu.xml"
+
+[linux]
+neovim  = "~/.config/nvim"
+xinitrc = "~/.xinitrc"
+termux  = "~/.termux"
+"virtualenvwrapper/postactivate" = "~/.virtualenvs/postactivate"
+"virtualenvwrapper/postdeactivate" = "~/.virtualenvs/postdeactivate"

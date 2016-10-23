@@ -22,34 +22,37 @@ $ cargo install
 
 ## Getting started (Experimental)
 1. Clone your dotfiles repository with `git` command.
-1. write configuration of dotfiles management to `~/.dotconfig.toml` (see below for details).
+1. Set the value of `$DOT_DIR` to the location of dotfiles repository.
 1. type `dot link`
 
-## Configuration
+```shell-session
+$ git clone --recursive https://github.com/example/dotfiles.git /home/example/.dotfiles
+$ export DOT_DIR=/home/example/.dotfiles
+$ dot link
+```
 
+```shell-session
+$ echo 'export DOT_DIR="$HOME/.dotfiles"' >> ~/.bashrc
+```
+
+## Configuration
 See also [my dotfiles](https://github.com/ubnt-intrepid/.dotfiles).
 
 ```toml
-# URL of your dotfiles repository
-clone_repository = "https://github.com/ubnt-intrepid/.dotfiles.git"
+# $DOT_DIR/.entries
 
-# The destination path of dotfiles repository
-dotdir = "$HOME/.dotfiles"
-
-# Array of paths to determinte mappings of dotfiles
-linkfiles = [
-  "$dotdir/.config/dotlink.toml",
-  "$dotdir/.config/dotlink-linux.toml",
-]
-```
-
-```toml
-# dotlink.toml
-
+[general]
 gitconfig   = "~/.gitconfig"
 "vim/vimrc" = "~/.vimrc"
+#...
 
-...
+[windows]
+vscode = "$APPDATA/Code/User"
+powershell = "$HOME/Documents/WindowsPowerShell"
+#...
+
+[linux]
+xinitrc = "~/.xinitrc"
 ```
 
 ## License

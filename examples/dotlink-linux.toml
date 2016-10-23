@@ -1,6 +1,0 @@
-neovim  = "~/.config/nvim"
-xinitrc = "~/.xinitrc"
-termux  = "~/.termux"
-
-"virtualenvwrapper/postactivate" = "~/.virtualenvs/postactivate"
-"virtualenvwrapper/postdeactivate" = "~/.virtualenvs/postdeactivate"
