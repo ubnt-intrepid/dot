@@ -9,8 +9,22 @@ mod entry;
 mod util;
 
 use std::env;
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
+use std::path::{Path, PathBuf};
 use dotfiles::Dotfiles;
+
+
+pub fn main() {
+  if env::var("HOME").is_err() {
+    env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
+  }
+
+  let mut app = App::new();
+
+  let matches = cli::build_cli().get_matches();
+  let exitcode = app.process_command(matches);
+
+  std::process::exit(exitcode);
+}
 
 
 struct App {
@@ -19,18 +33,11 @@ struct App {
 
 impl App {
   pub fn new() -> App {
-    let config = Self::read_config_file().unwrap();
-
-    let dotdir = config.get("dotdir").unwrap().as_str().unwrap().to_owned();
-    let dotdir = dotdir.replace("/", &format!("{}", MAIN_SEPARATOR));
-    let dotdir = util::expand_full(&dotdir);
+    let dotdir = env::var("DOT_DIR").expect("$DOT_DIR is not set.");
     let dotdir = Path::new(&dotdir).to_path_buf();
-
     env::set_var("dotdir", dotdir.as_os_str());
-    if env::var("HOME").is_err() {
-      env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
-    }
 
+    let config = Self::read_config_file().unwrap();
     let linkfiles: Vec<PathBuf> = config.get("linkfiles")
       .unwrap()
       .as_slice()
@@ -41,7 +48,6 @@ impl App {
         Path::new(&l).to_path_buf()
       })
       .collect();
-
     let dotfiles = Dotfiles::new(dotdir, linkfiles.as_slice());
 
     App { dotfiles: dotfiles }
@@ -102,14 +108,4 @@ impl App {
 
     0
   }
-}
-
-
-pub fn main() {
-  let mut app = App::new();
-
-  let matches = cli::build_cli().get_matches();
-  let exitcode = app.process_command(matches);
-
-  std::process::exit(exitcode);
 }
