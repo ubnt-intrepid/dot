@@ -8,7 +8,6 @@ use entry::Entry;
 use util;
 
 pub struct Config {
-  pub repo: String,
   pub dotdir: String,
   linkfiles: Vec<String>,
 }
@@ -19,10 +18,7 @@ impl Config {
     let extracted_path = util::expand_full(path);
     let config = read_toml(&extracted_path).unwrap();
 
-    let repo = config.get("clone_repository").unwrap().as_str().unwrap().to_owned();
     let dotdir = config.get("dotdir").unwrap().as_str().unwrap().to_owned();
-
-    env::set_var("clone_repository", util::expand_full(&repo));
     env::set_var("dotdir", util::expand_full(&dotdir));
 
     let mut linkfiles = Vec::new();
@@ -35,7 +31,6 @@ impl Config {
     }
 
     Config {
-      repo: repo,
       dotdir: dotdir,
       linkfiles: linkfiles,
     }
