@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 use entry::Entry;
 use util;
+use toml;
+
 
 pub struct Dotfiles {
   _root_dir: PathBuf,
@@ -27,16 +29,16 @@ impl Dotfiles {
 }
 
 fn read_entries(root_dir: &Path) -> Vec<Entry> {
-  let entries = util::read_toml(root_dir.join(".entries")).unwrap();
+  let ref entries = util::read_toml(root_dir.join(".entries")).unwrap();
 
   let mut buf = Vec::new();
-  read_entries_from_key(buf, "general");
-  read_entries_from_key(buf, util::OS_NAME);
+  read_entries_from_key(&mut buf, entries, root_dir, "general");
+  read_entries_from_key(&mut buf, entries, root_dir, util::OS_NAME);
 
   buf
 }
 
-fn read_entries_from_key(entries: &mut Vec<Entry>, key: &str) {
+fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::Table, root_dir: &Path, key: &str) {
   for (ref key, ref val) in entries.get(key).unwrap().as_table().unwrap().iter() {
     if let Some(val) = val.as_str() {
       let src = util::expand_full(&format!("{}/{}", root_dir.display(), key));
@@ -46,7 +48,7 @@ fn read_entries_from_key(entries: &mut Vec<Entry>, key: &str) {
         dst = util::expand_full(&format!("$HOME/{}", val));
       }
 
-      entries.push(Entry::new(&src, &dst));
+      buf.push(Entry::new(&src, &dst));
     }
   }
 }
