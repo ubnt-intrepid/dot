@@ -104,3 +104,13 @@ pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::Table, io::Error> {
                                                            "failed to parse configuration file \
                                                             as TOML"))
 }
+
+
+#[cfg(target_os = "windows")]
+pub static OS_NAME: &'static str = "windows";
+
+#[cfg(target_os = "macos")]
+pub static OS_NAME: &'static str = "darwin";
+
+#[cfg(target_os = "linux")]
+pub static OS_NAME: &'static str = "linux";

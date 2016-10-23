@@ -9,7 +9,7 @@ mod entry;
 mod util;
 
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use dotfiles::Dotfiles;
 
 
@@ -37,18 +37,7 @@ impl App {
     let dotdir = Path::new(&dotdir).to_path_buf();
     env::set_var("dotdir", dotdir.as_os_str());
 
-    let config = Self::read_config_file().unwrap();
-    let linkfiles: Vec<PathBuf> = config.get("linkfiles")
-      .unwrap()
-      .as_slice()
-      .unwrap()
-      .iter()
-      .map(|l| {
-        let l = util::expand_full(l.as_str().unwrap());
-        Path::new(&l).to_path_buf()
-      })
-      .collect();
-    let dotfiles = Dotfiles::new(dotdir, linkfiles.as_slice());
+    let dotfiles = Dotfiles::new(dotdir);
 
     App { dotfiles: dotfiles }
   }
@@ -61,12 +50,6 @@ impl App {
       ("dir", _) => self.command_dir(),
       (_, _) => unreachable!(),
     }
-  }
-
-  fn read_config_file() -> Result<toml::Table, std::io::Error> {
-    let path = "~/.dotconfig.toml";
-    let extracted_path = util::expand_full(path);
-    util::read_toml(&extracted_path)
   }
 
   fn command_dir(&self) -> i32 {
