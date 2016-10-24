@@ -1,8 +1,9 @@
+use std::env;
 use std::io::{self, Read};
 use std::fs::{self, File};
 use std::process::{Command, Stdio};
 use std::path::Path;
-use shellexpand;
+use shellexpand::{self, LookupError};
 use toml;
 use privilege::enable_privilege;
 
@@ -33,8 +34,8 @@ pub fn wait_exec(cmd: &str,
 }
 
 
-pub fn expand_full(s: &str) -> String {
-  shellexpand::full(s).unwrap().into_owned()
+pub fn expand_full(s: &str) -> Result<String, LookupError<env::VarError>> {
+  shellexpand::full(s).map(|s| s.into_owned())
 }
 
 

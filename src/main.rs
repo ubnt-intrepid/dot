@@ -23,7 +23,11 @@ pub fn main() {
     env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
   }
 
-  let mut app = App::new();
+  let dotdir = env::var("DOT_DIR").unwrap_or(util::expand_full("$HOME/.dotfiles").unwrap());
+  env::set_var("DOT_DIR", dotdir.as_str());
+  env::set_var("dotdir", dotdir.as_str());
+
+  let mut app = App::new(&dotdir);
   std::process::exit(app.main());
 }
 
@@ -33,13 +37,8 @@ struct App {
 }
 
 impl App {
-  pub fn new() -> App {
-    let dotdir = env::var("DOT_DIR").expect("$DOT_DIR is not set.");
-    let dotdir = Path::new(&dotdir).to_path_buf();
-    env::set_var("dotdir", dotdir.as_os_str());
-
-    let dotfiles = Dotfiles::new(dotdir);
-
+  pub fn new(dotdir: &str) -> App {
+    let dotfiles = Dotfiles::new(Path::new(dotdir).to_path_buf());
     App { dotfiles: dotfiles }
   }
 
