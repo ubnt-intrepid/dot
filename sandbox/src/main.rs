@@ -29,7 +29,7 @@ fn enable_priviledges(name: &str, enable: bool) -> bool {
     HighPart: 0,
   };
   let ret = unsafe {
-  let name = CString::new(name).unwrap();
+    let name = CString::new(name).unwrap();
     LookupPrivilegeValueA(null(), name.as_ptr(), &mut symlink_luid)
   };
   if ret == 0 {
@@ -42,8 +42,8 @@ fn enable_priviledges(name: &str, enable: bool) -> bool {
   let mut p = token_priviledges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES;
   unsafe {
     (*p).PrivilegeCount = 1;
-    (*p).Privileges[0].Luid = symlink_luid;
-    (*p).Privileges[0].Attributes = if enable {
+    (*((*p).Privileges.as_ptr() as *mut winnt::LUID_AND_ATTRIBUTES)).Luid = symlink_luid;
+    (*((*p).Privileges.as_ptr() as *mut winnt::LUID_AND_ATTRIBUTES)).Attributes = if enable {
       winnt::SE_PRIVILEGE_ENABLED
     } else {
       0
@@ -71,9 +71,9 @@ fn enable_priviledges(name: &str, enable: bool) -> bool {
 
 
 fn main() {
-  let enabled = enable_priviledges("SeCreateSymbolicLinkPriviledge", true);
+  let enabled = enable_priviledges("SeCreateSymbolicLinkPrivilege", true);
   if enabled {
-    println!("success to enable SeCreateSymbolicLinkPriviledge");
+    println!("success to enable SeCreateSymbolicLinkPrivilege");
   } else {
     println!("failed");
   }
