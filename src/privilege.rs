@@ -57,10 +57,10 @@ pub fn enable_privilege(name: &str) -> bool {
   let token_privileges = vec![0u8; size_of::<winnt::TOKEN_PRIVILEGES>() + 1];
   unsafe {
     let mut p = token_privileges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES;
+    let mut la = (*p).Privileges.as_ptr() as *mut winnt::LUID_AND_ATTRIBUTES;
     (*p).PrivilegeCount = 1;
-    (*((*p).Privileges.as_ptr() as *mut winnt::LUID_AND_ATTRIBUTES)).Luid = luid;
-    (*((*p).Privileges.as_ptr() as *mut winnt::LUID_AND_ATTRIBUTES)).Attributes =
-      winnt::SE_PRIVILEGE_ENABLED;
+    (*la).Luid = luid;
+    (*la).Attributes = winnt::SE_PRIVILEGE_ENABLED;
   }
 
   unsafe {
