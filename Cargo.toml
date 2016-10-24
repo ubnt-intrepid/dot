@@ -6,10 +6,10 @@ description = "Alternative of dotfile management frameworks"
 build = "build.rs"
 
 [build-dependencies]
-clap = "^2.13.0"
+clap = "^2.16.0"
 
 [dependencies]
-clap = "^2.13.0"
+clap = "^2.16.0"
 toml = "^0.2.1"
 shellexpand = "0.1.0"
 ansi_term = "^0.9.0"
