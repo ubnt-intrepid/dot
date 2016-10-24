@@ -5,6 +5,7 @@ use std::process::{Command, Stdio};
 use std::path::Path;
 use shellexpand::{self, LookupError};
 use toml;
+#[cfg(windows)]
 use privilege::enable_privilege;
 
 
