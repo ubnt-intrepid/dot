@@ -2,15 +2,31 @@ extern crate ansi_term;
 extern crate clap;
 extern crate shellexpand;
 extern crate toml;
+extern crate winapi;
+extern crate advapi32;
+extern crate kernel32;
 
 mod cli;
 mod dotfiles;
 mod entry;
 mod util;
+#[cfg(windows)]
+mod privilege;
 
 use std::env;
 use std::path::Path;
 use dotfiles::Dotfiles;
+
+#[cfg(windows)]
+fn enable_privilege() {
+  let enabled = privilege::enable_privilege("SeCreateSymbolicLinkPrivilege");
+  if !enabled {
+    panic!("failed to enable SeCreateSymbolicLinkPrivilege");
+  }
+}
+
+#[cfg(not(windows))]
+fn enable_privilege() {}
 
 
 pub fn main() {
@@ -71,6 +87,8 @@ impl App {
   }
 
   fn command_link(&self, args: &clap::ArgMatches) -> i32 {
+    enable_privilege();
+
     let dry_run = args.is_present("dry-run");
     let verbose = args.is_present("verbose");
 

@@ -1,9 +1,0 @@
-[package]
-name = "sandbox"
-version = "0.1.0"
-authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
-
-[dependencies]
-winapi = "*"
-advapi32-sys = "*"
-kernel32-sys = "*"
