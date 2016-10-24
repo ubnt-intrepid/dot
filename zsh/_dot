@@ -59,6 +59,17 @@ _arguments -s -S -C \
 "--version[Prints version information]" \
 && ret=0
 ;;
+(clone)
+_arguments -s -S -C \
+"-n[do not actually perform I/O operations]" \
+"--dry-run[do not actually perform I/O operations]" \
+"-h[Prints help information]" \
+"--help[Prints help information]" \
+"-V[Prints version information]" \
+"--version[Prints version information]" \
+"1:: :_dot_clone_commands" \
+&& ret=0
+;;
 (help)
 _arguments -s -S -C \
 "-h[Prints help information]" \
@@ -79,6 +90,7 @@ _dot_commands() {
 "link:Create all of the symbolic links into home directory" \
 "clean:Remote all of registered links from home directory" \
 "root:Show the location of dotfiles repository and exit" \
+"clone:Clone dotfiles repository from remote" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'dot commands' commands "$@"
@@ -96,6 +108,14 @@ _dot_clean_commands() {
         
     )
     _describe -t commands 'dot clean commands' commands "$@"
+}
+(( $+functions[_dot_clone_commands] )) ||
+_dot_clone_commands() {
+    local commands; commands=(
+        "URL:URL of remote repository" \
+"DOTDIR:Path of cloned repository (default: '$DOT_DIR')" \
+    )
+    _describe -t commands 'dot clone commands' commands "$@"
 }
 (( $+functions[_dot_help_commands] )) ||
 _dot_help_commands() {

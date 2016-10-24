@@ -60,8 +60,18 @@ impl App {
         self.command_clean(dry_run, verbose)
       }
       ("root", _) => self.command_root(),
+      ("clone", Some(args)) => {
+        let url = args.value_of("url").unwrap();
+        let dotdir = args.value_of("dotdir").unwrap_or(self.dotfiles.root_dir().to_str().unwrap());
+        let dry_run = args.is_present("dry-run");
+        self.command_clone(url, dotdir, dry_run)
+      }
       (_, _) => unreachable!(),
     }
+  }
+
+  fn command_clone(&self, url: &str, dotdir: &str, dry_run: bool) -> i32 {
+    util::wait_exec("git", &["clone", url, dotdir], None, dry_run).unwrap()
   }
 
   fn command_root(&self) -> i32 {
