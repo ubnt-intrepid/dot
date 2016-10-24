@@ -5,35 +5,38 @@
 
 `dot.rs` is a tiny CLI tool for management of dotfiles, written in Rust.
 
-This project is based on [ssh0](https://github.com/ssh0)'s [dot](https://github.com/ssh0/dot) and
+This project is based on [ssh0](https://github.com/ssh0)'s [dot](https://github.com/ssh0/dot), and
 inspired by [rhysd](https://github.com/rhysd)'s [dotfiles](https://github.com/rhysd/dotfiles).
 
-## Features
-* Minimal dependency
-* Available on multiple platforms: Windows, Linux and MacOSX (untested)
-
-## Installation
-
+## Getting started
 ```shell-session
 $ git clone https://github.com/ubnt-intrepid/dot.rs.git
 $ cd dot.rs
 $ cargo install
 ```
 
-## Getting started (Experimental)
-1. Clone your dotfiles repository with `git` command.
-1. Set the value of `$DOT_DIR` to the location of dotfiles repository.
-1. type `dot link`
+1. Clone your dotfiles repository (`dot clone`).
+1. Create all of the link (`dot link`)
 
 ```shell-session
-$ git clone --recursive https://github.com/example/dotfiles.git /home/example/.dotfiles
 $ export DOT_DIR=/home/example/.dotfiles
+$ dot clone https://github.com/example/dotfiles.git $DOT_DIR
 $ dot link
 ```
 
-```shell-session
-$ echo 'export DOT_DIR="$HOME/.dotfiles"' >> ~/.bashrc
-```
+## Commands
+* `link [-v | --verbose] [-n | --dry-run]`  
+  Create all of managed links into your home directory.
+* `clean [-v | --verbose] [-n | --dry-run]`  
+  Remove all of managed links from your home directory.
+* `check [-v | --verbose]`  
+  Check if all of links are correctly existed.
+* `root`  
+  Show the root directory of dotfiles repository.
+* `clone <url> [<dotdir>] [-n | --dry-run]`  
+  Clone your dotfiles repository from remote.
+
+If you want more information, type `dot help`.
 
 ## Configuration
 See also [my dotfiles](https://github.com/ubnt-intrepid/.dotfiles).
