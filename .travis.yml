@@ -25,7 +25,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: aa
+    secure: "H++t8gTlcNKJMYZ+0GVcmCU4aaVqjmlkZMZ1uan74utL+1qp1K4ufL8tN2+1gO3z0r2cMpL6edzB+QMieupK5kKtroKwun8PFuwGO9CSj67ZM/XHxl/C/GMgtQtab1vwScQxcAJ4TLc8EXDTkAPFhnXMPgoNB+jStyTb5E92fozmTbTSrxIXB2WhTbnp4Lt4PtqvtVYBAL67q7s9ualoWXZnBoeyko9CQtUAfIV8tgrySwnA6BbzEZ/grFP/xUw3Ia7Am0oO+6TNbGkONxte8HoqtlagLGNr5ytfBUNpRa1O5YC6o7tpOrbWIhAY3Zr3sUyhe+gc8cwU09y5UDC4uHjezbMuwlk7C1Czwm9lCYW1p+SGVUGZpC3COChFpHJkKPhIIKCuizNPGyZWjk0ZlerwYOuTCsnaY5MnajMs4WqOs8aT/dLCwoXG9G7fKjxRcnDfXMEZcf24H+73Y6/IrkuYY0jlWa+lbh5sIayb4PcIB5IwZhgIjF1LQE/4P3T0UX7rdK0nEajrmcGFiygCarZP4FAuDD9lrmanqRYTtNh92FOl4m2Sbqh213btzIC0TCzwWod7gWydze3d3cTUjOXjJUFYkAzZAVluB8pf5nTl81Nd4PztYyVDhXei+HEAiwrwucShvtEWrySXG3IapN20/PoM1CAXqyzR0IABEOQ="
   file: $TARGET-$HOST
   overwrite: true
   skip_cleanup: true

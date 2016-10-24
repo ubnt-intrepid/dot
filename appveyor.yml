@@ -35,7 +35,7 @@ deploy:
   prerelease: false
   force_update: true
   auth_token:
-    secure: xx
+    secure: wf5/9pbr8Jl2sGXJSnm6m9qLT5Xu6cgbXZ8vO+81DnXcCUSvO2hZMW2mCSGNTVqW
   on:
     branch: master
     appveyor_repo_tag: true
