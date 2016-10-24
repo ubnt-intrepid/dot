@@ -51,7 +51,7 @@ _arguments -s -S -C \
 "--version[Prints version information]" \
 && ret=0
 ;;
-(dir)
+(root)
 _arguments -s -S -C \
 "-h[Prints help information]" \
 "--help[Prints help information]" \
@@ -78,7 +78,7 @@ _dot_commands() {
         "check:Check the files are correctly linked to the right places" \
 "link:Create all of the symbolic links into home directory" \
 "clean:Remote all of registered links from home directory" \
-"dir:Show the location of dotfiles repository and exit" \
+"root:Show the location of dotfiles repository and exit" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'dot commands' commands "$@"
@@ -97,13 +97,6 @@ _dot_clean_commands() {
     )
     _describe -t commands 'dot clean commands' commands "$@"
 }
-(( $+functions[_dot_dir_commands] )) ||
-_dot_dir_commands() {
-    local commands; commands=(
-        
-    )
-    _describe -t commands 'dot dir commands' commands "$@"
-}
 (( $+functions[_dot_help_commands] )) ||
 _dot_help_commands() {
     local commands; commands=(
@@ -117,6 +110,13 @@ _dot_link_commands() {
         
     )
     _describe -t commands 'dot link commands' commands "$@"
+}
+(( $+functions[_dot_root_commands] )) ||
+_dot_root_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'dot root commands' commands "$@"
 }
 
 _dot "$@"

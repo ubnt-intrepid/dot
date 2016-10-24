@@ -17,17 +17,6 @@ use std::env;
 use std::path::Path;
 use dotfiles::Dotfiles;
 
-#[cfg(windows)]
-fn enable_privilege() {
-  let enabled = privilege::enable_privilege("SeCreateSymbolicLinkPrivilege");
-  if !enabled {
-    panic!("failed to enable SeCreateSymbolicLinkPrivilege");
-  }
-}
-
-#[cfg(not(windows))]
-fn enable_privilege() {}
-
 
 pub fn main() {
   if env::var("HOME").is_err() {
@@ -35,11 +24,7 @@ pub fn main() {
   }
 
   let mut app = App::new();
-
-  let matches = cli::build_cli().get_matches();
-  let exitcode = app.process_command(matches);
-
-  std::process::exit(exitcode);
+  std::process::exit(app.main());
 }
 
 
@@ -58,55 +43,58 @@ impl App {
     App { dotfiles: dotfiles }
   }
 
-  pub fn process_command(&mut self, matches: clap::ArgMatches) -> i32 {
+  pub fn main(&mut self) -> i32 {
+    let matches = cli::build_cli().get_matches();
     match matches.subcommand() {
-      ("check", Some(m)) => self.command_check(m),
-      ("link", Some(m)) => self.command_link(m),
-      ("clean", Some(m)) => self.command_clean(m),
-      ("dir", _) => self.command_dir(),
+      ("check", Some(args)) => {
+        let verbose = args.is_present("verbose");
+        self.command_check(verbose)
+      }
+      ("link", Some(args)) => {
+        let dry_run = args.is_present("dry-run");
+        let verbose = args.is_present("verbose");
+        self.command_link(dry_run, verbose)
+      }
+      ("clean", Some(args)) => {
+        let dry_run = args.is_present("dry-run");
+        let verbose = args.is_present("verbose");
+        self.command_clean(dry_run, verbose)
+      }
+      ("root", _) => self.command_root(),
       (_, _) => unreachable!(),
     }
   }
 
-  fn command_dir(&self) -> i32 {
+  fn command_root(&self) -> i32 {
     println!("{}", self.dotfiles.root_dir().display());
     0
   }
 
-  fn command_check(&self, args: &clap::ArgMatches) -> i32 {
-    let verbose = args.is_present("verbose");
-
+  fn command_check(&self, verbose: bool) -> i32 {
     let mut num_unhealth = 0;
     for entry in self.dotfiles.entries() {
       if entry.check(verbose).unwrap() == false {
         num_unhealth += 1;
       }
     }
-
     num_unhealth
   }
 
-  fn command_link(&self, args: &clap::ArgMatches) -> i32 {
-    enable_privilege();
-
-    let dry_run = args.is_present("dry-run");
-    let verbose = args.is_present("verbose");
+  fn command_link(&self, dry_run: bool, verbose: bool) -> i32 {
+    if !util::enable_symlink_privilege() {
+      panic!("failed to enable SeCreateSymbolicLinkPrivilege");
+    }
 
     for entry in self.dotfiles.entries() {
       entry.mklink(dry_run, verbose).unwrap();
     }
-
     0
   }
 
-  fn command_clean(&self, args: &clap::ArgMatches) -> i32 {
-    let dry_run = args.is_present("dry-run");
-    let verbose = args.is_present("verbose");
-
+  fn command_clean(&self, dry_run: bool, verbose: bool) -> i32 {
     for entry in self.dotfiles.entries() {
       entry.unlink(dry_run, verbose).unwrap();
     }
-
     0
   }
 }

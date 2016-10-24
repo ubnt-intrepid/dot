@@ -19,14 +19,14 @@ _dot() {
             clean)
                 cmd+="_clean"
                 ;;
-            dir)
-                cmd+="_dir"
-                ;;
             help)
                 cmd+="_help"
                 ;;
             link)
                 cmd+="_link"
+                ;;
+            root)
+                cmd+="_root"
                 ;;
             *)
                 ;;
@@ -35,7 +35,7 @@ _dot() {
 
     case "${cmd}" in
         dot)
-            opts=" -h -V  --help --version   check link clean dir help"
+            opts=" -h -V  --help --version   check link clean root help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -80,21 +80,6 @@ _dot() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-        dot_dir)
-            opts=" -h -V  --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-            return 0
-            ;;
         dot_help)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -112,6 +97,21 @@ _dot() {
             ;;
         dot_link)
             opts=" -n -v -h -V  --dry-run --verbose --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
+        dot_root)
+            opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0

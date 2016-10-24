@@ -37,6 +37,6 @@ pub fn build_cli() -> App<'static, 'static> {
         .help("Use verbose output")
         .long("verbose")
         .short("v")))
-    .subcommand(SubCommand::with_name("dir")
+    .subcommand(SubCommand::with_name("root")
       .about("Show the location of dotfiles repository and exit"))
 }
