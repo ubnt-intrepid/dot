@@ -5,6 +5,7 @@ extern crate toml;
 extern crate winapi;
 extern crate advapi32;
 extern crate kernel32;
+extern crate runas;
 
 mod app;
 mod cli;

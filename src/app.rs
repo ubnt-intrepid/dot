@@ -1,9 +1,11 @@
+use std::env;
 use std::path::Path;
+use std::process;
+use runas;
 use dotfiles::Dotfiles;
 use util;
 #[cfg(windows)]
 use windows;
-
 
 pub struct App {
   dotfiles: Dotfiles,
@@ -63,8 +65,15 @@ fn check_symlink_privilege() {
       }
     }
     ElevationType::Limited => {
-      // FIXME: do elevate
-      panic!("should be elevate as an Administrator.");
+      println!("[debug] run as administrator");
+      let args: Vec<_> = env::args().skip(1).collect();
+      let status = runas::Command::new(env::current_exe().unwrap())
+        .args(args.as_slice())
+        .show(true)
+        .status()
+        .unwrap();
+      process::exit(status.code().unwrap());
+      // panic!("should be elevate as an Administrator.");
     }
     ElevationType::Full => (),
   }
