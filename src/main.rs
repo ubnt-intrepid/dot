@@ -12,7 +12,7 @@ mod dotfiles;
 mod entry;
 mod util;
 #[cfg(windows)]
-mod privilege;
+mod windows;
 
 use std::env;
 

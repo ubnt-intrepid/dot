@@ -1,6 +1,8 @@
 use std::path::Path;
 use dotfiles::Dotfiles;
 use util;
+#[cfg(windows)]
+use windows;
 
 
 pub struct App {
@@ -34,9 +36,7 @@ impl App {
   }
 
   pub fn command_link(&self, dry_run: bool, verbose: bool) -> i32 {
-    if !util::enable_symlink_privilege() {
-      panic!("failed to enable SeCreateSymbolicLinkPrivilege");
-    }
+    check_symlink_privilege();
 
     for entry in self.dotfiles.entries() {
       entry.mklink(dry_run, verbose).unwrap();
@@ -51,3 +51,21 @@ impl App {
     0
   }
 }
+
+
+#[cfg(windows)]
+fn check_symlink_privilege() {
+  if windows::is_user_an_admin() {
+    if !windows::is_elevated() {
+      panic!("should be elevate as an Administrator.");
+    }
+  } else {
+    if !windows::enable_privilege("SeCreateSymbolicLinkPrivilege") {
+      panic!("failed to enable SeCreateSymbolicLinkPrivilege");
+    }
+  }
+}
+
+#[cfg(not(windows))]
+#[inline]
+pub fn check_symlink_privilege() {}

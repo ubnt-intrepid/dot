@@ -5,8 +5,6 @@ use std::process::{Command, Stdio};
 use std::path::Path;
 use shellexpand::{self, LookupError};
 use toml;
-#[cfg(windows)]
-use privilege::enable_privilege;
 
 
 #[allow(dead_code)]
@@ -117,15 +115,3 @@ pub static OS_NAME: &'static str = "darwin";
 
 #[cfg(target_os = "linux")]
 pub static OS_NAME: &'static str = "linux";
-
-
-#[cfg(windows)]
-pub fn enable_symlink_privilege() -> bool {
-  enable_privilege("SeCreateSymbolicLinkPrivilege")
-}
-
-#[cfg(not(windows))]
-#[inline]
-pub fn enable_symlink_privilege() -> bool {
-  true
-}
