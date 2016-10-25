@@ -9,8 +9,8 @@ environment:
     TARGET: dot 
     TOOLCHAIN: stable
   matrix:
+    - HOST: i686-pc-windows-msvc
     - HOST: x86_64-pc-windows-msvc
-    - HOST: x86_64-pc-windows-gnu
 
 install:
   - ps: Start-FileDownload 'https://static.rust-lang.org/rustup/dist/i686-pc-windows-msvc/rustup-init.exe'
