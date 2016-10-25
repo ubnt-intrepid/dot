@@ -1,5 +1,9 @@
 cargo build --release
 
-mkdir %TARGET%-%HOST%
-copy target\release\%TARGET%.exe .\%TARGET%-%HOST%\dot.exe
-copy completions\* .\%TARGET%-%HOST%\
+setx HOST -f host-triplet -a 0,0 > NUL
+set FNAME=%TARGET%-%HOST%
+
+
+mkdir %FNAME%
+copy target\release\%TARGET%.exe .\%FNAME%\%TARGET%.exe
+copy completions\* .\%FNAME%\

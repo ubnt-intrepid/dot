@@ -11,4 +11,8 @@ fn main() {
   cli::build_cli().gen_completions(pkg_name, clap::Shell::Bash, &out_dir);
   cli::build_cli().gen_completions(pkg_name, clap::Shell::Zsh, &out_dir);
   cli::build_cli().gen_completions(pkg_name, clap::Shell::Fish, &out_dir);
+
+  use std::io::Write;
+  let mut host = std::fs::OpenOptions::new().create(true).write(true).open("host-triplet").unwrap();
+  host.write_fmt(format_args!("{}\n", env!("HOST"))).unwrap();
 }

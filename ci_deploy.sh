@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-fname="dot-$(uname -m)-$(uname -s | tr [:upper:] [:lower:])"
+fname="dot-$(cat host-triplet)"
 
 cargo build --release
 
