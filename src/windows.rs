@@ -1,3 +1,10 @@
+//
+
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+#![allow(improper_ctypes)]
+
 use std::ffi::CString;
 use std::mem;
 use std::os::raw::c_void;
@@ -9,14 +16,42 @@ use kernel32;
 use advapi32;
 
 
+type BYTE = u8;
+type BOOL = i32;
+type DWORD = u32;
+
+
 #[repr(C)]
-#[allow(non_camel_case_types)]
-#[allow(non_snake_case)]
 struct TOKEN_ELEVATION {
-  TokenIsElevated: u32,
+  TokenIsElevated: DWORD,
 }
 
-#[allow(non_camel_case_types)]
+type TOKEN_ELEVATION_TYPE = u32;
+
+#[repr(C)]
+struct TOKEN_GROUPS {
+  GroupCount: DWORD,
+  Groups: [SID_AND_ATTRIBUTES; 0],
+}
+
+#[repr(C)]
+struct SID_AND_ATTRIBUTES {
+  Sid: PSID,
+  Attributes: DWORD,
+}
+
+#[repr(C)]
+struct SID_IDENTIFIER_AUTHORITY {
+  Value: [BYTE; 6],
+}
+
+#[repr(C)]
+#[allow(improper_ctypes)]
+struct SID;
+
+type PSID = *mut SID;
+type PSID_IDENTIFIER_AUTHORITY = *mut SID_IDENTIFIER_AUTHORITY;
+
 #[allow(dead_code)]
 enum TOKEN_INFORMATION_CLASS {
   TokenUser = 1,
@@ -64,13 +99,32 @@ enum TOKEN_INFORMATION_CLASS {
 
 extern "system" {
   fn GetTokenInformation(TokenHandle: winnt::HANDLE,
-                         TokenInformationClass: u32,
+                         TokenInformationClass: DWORD,
                          TokenInformation: *mut c_void,
-                         TokenInformationLength: u32,
-                         ReturnLength: *mut u32)
-                         -> i32;
+                         TokenInformationLength: DWORD,
+                         ReturnLength: *mut DWORD)
+                         -> BOOL;
 
-  fn IsUserAnAdmin() -> i32;
+  fn IsUserAnAdmin() -> BOOL;
+
+  fn AllocateAndInitializeSid(pIdentifierAuthority: PSID_IDENTIFIER_AUTHORITY,
+                              nSubAuthorityCount: BYTE,
+                              dwSubAuthority0: DWORD,
+                              dwSubAuthority1: DWORD,
+                              dwSubAuthority2: DWORD,
+                              dwSubAuthority3: DWORD,
+                              dwSubAuthority4: DWORD,
+                              dwSubAuthority5: DWORD,
+                              dwSubAuthority6: DWORD,
+                              dwSubAuthority7: DWORD,
+                              pSid: *mut PSID)
+                              -> BOOL;
+  fn FreeSid(pSid: PSID) -> *mut c_void;
+
+  fn CheckTokenMembership(TokenHandle: winnt::HANDLE,
+                          SidToCheck: PSID,
+                          IsMember: *mut BOOL)
+                          -> BOOL;
 }
 
 
@@ -95,15 +149,19 @@ impl Drop for Handle {
 }
 
 
-fn open_process_token(token_type: u32) -> Option<Handle> {
-  let mut h_token = null_mut();
-  let ret =
-    unsafe { advapi32::OpenProcessToken(kernel32::GetCurrentProcess(), token_type, &mut h_token) };
-  if ret == 0 {
-    return None;
-  }
+struct Sid(PSID);
 
-  Some(Handle::new(h_token))
+impl Sid {
+  fn as_raw(&self) -> PSID {
+    self.0
+  }
+}
+
+impl Drop for Sid {
+  fn drop(&mut self) {
+    unsafe { FreeSid(self.0) };
+    self.0 = null_mut();
+  }
 }
 
 
@@ -170,6 +228,47 @@ pub fn is_elevated() -> bool {
   elevation.TokenIsElevated != 0
 }
 
-pub fn is_user_an_admin() -> bool {
-  (unsafe { IsUserAnAdmin() }) != 0
+#[derive(Debug, PartialEq)]
+pub enum ElevationType {
+  Default = 1,
+  Full,
+  Limited,
+}
+
+pub fn elevation_type() -> Option<ElevationType> {
+  let token = match open_process_token(winnt::TOKEN_QUERY) {
+    Some(h) => h,
+    None => return None,
+  };
+
+  let mut elev_type = 0;
+  let mut cb_size = mem::size_of_val(&elev_type) as u32;
+  let ret = unsafe {
+    GetTokenInformation(token.as_raw(),
+                        mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevationType) as u32,
+                        mem::transmute(&mut elev_type),
+                        mem::size_of_val(&elev_type) as u32,
+                        &mut cb_size)
+  };
+  if ret == 0 {
+    return None;
+  }
+
+  match elev_type {
+    1 => Some(ElevationType::Default),      // default (standard user/ administrator without UAC)
+    2 => Some(ElevationType::Full),         // full access (administrator, not elevated)
+    3 => Some(ElevationType::Limited),      // limited access (administrator, not elevated)
+    _ => None,
+  }
+}
+
+fn open_process_token(token_type: u32) -> Option<Handle> {
+  let mut h_token = null_mut();
+  let ret =
+    unsafe { advapi32::OpenProcessToken(kernel32::GetCurrentProcess(), token_type, &mut h_token) };
+  if ret == 0 {
+    return None;
+  }
+
+  Some(Handle::new(h_token))
 }

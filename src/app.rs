@@ -55,13 +55,15 @@ impl App {
 
 #[cfg(windows)]
 fn check_symlink_privilege() {
-  if windows::is_user_an_admin() {
-    if !windows::is_elevated() {
-      panic!("should be elevate as an Administrator.");
+  use windows::ElevationType;
+  match windows::elevation_type().unwrap() {
+    ElevationType::Default | ElevationType::Full => {
+      if !windows::enable_privilege("SeCreateSymbolicLinkPrivilege") {
+        panic!("failed to enable SeCreateSymbolicLinkPrivilege");
+      }
     }
-  } else {
-    if !windows::enable_privilege("SeCreateSymbolicLinkPrivilege") {
-      panic!("failed to enable SeCreateSymbolicLinkPrivilege");
+    ElevationType::Limited => {
+      panic!("should be elevate as an Administrator.");
     }
   }
 }
