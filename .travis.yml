@@ -5,7 +5,11 @@ dist: trusty
 matrix:
   include:
   - os: linux
+    env: TARGET=dot  TOOLCHAIN=stable  HOST=i686-unknown-linux-gnu
+  - os: linux
     env: TARGET=dot  TOOLCHAIN=stable  HOST=x86_64-unknown-linux-gnu
+  - os: osx
+    env: TARGET=dot  TOOLCHAIN=stable  HOST=i686-apple-darwin
   - os: osx
     env: TARGET=dot  TOOLCHAIN=stable  HOST=x86_64-apple-darwin
 
