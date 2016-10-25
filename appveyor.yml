@@ -21,13 +21,13 @@ install:
 
 build_script:
   - cargo build --release
-  - copy target\release\%TARGET%.exe .\%TARGET%-%HOST%.exe
+  - .\ci_deploy.bat
 
 test_script:
   - cargo test --release
 
 artifacts:
-  - path: $(TARGET)-$(HOST).exe
+  - path: $(TARGET)-$(HOST)
 
 deploy:
   provider: GitHub

@@ -5,6 +5,13 @@ os:
   - linux
   - osx
 
+env:
+  - ARCH=x86_64
+  - ARCH=i686
+
+install:
+  - curl -sSL https://raw.githubusercontent.com/carllerche/travis-rust-matrix/master/test | bash
+
 script:
   - cargo build --release
   - cargo test --release
