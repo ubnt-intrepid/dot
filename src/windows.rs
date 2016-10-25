@@ -235,7 +235,7 @@ pub enum ElevationType {
   Limited,
 }
 
-pub fn elevation_type() -> Option<ElevationType> {
+pub fn get_elevation_type() -> Option<ElevationType> {
   let token = match open_process_token(winnt::TOKEN_QUERY) {
     Some(h) => h,
     None => return None,
