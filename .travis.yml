@@ -5,13 +5,13 @@ dist: trusty
 matrix:
   include:
   - os: linux
-    env: TARGET=dot  TOOLCHAIN=stable  HOST=i686-unknown-linux-gnu
+    env: TARGET=dot  TOOLCHAIN=stable  ARCH=i686  HOST=i686-unknown-linux-gnu
   - os: linux
-    env: TARGET=dot  TOOLCHAIN=stable  HOST=x86_64-unknown-linux-gnu
+    env: TARGET=dot  TOOLCHAIN=stable  ARCH=x86_64  HOST=x86_64-unknown-linux-gnu
   - os: osx
-    env: TARGET=dot  TOOLCHAIN=stable  HOST=i686-apple-darwin
+    env: TARGET=dot  TOOLCHAIN=stable  ARCH=i686  HOST=i686-apple-darwin
   - os: osx
-    env: TARGET=dot  TOOLCHAIN=stable  HOST=x86_64-apple-darwin
+    env: TARGET=dot  TOOLCHAIN=stable  ARCH=x86_64  HOST=x86_64-apple-darwin
 
 install:
   - curl -sSLf sh.rustup.rs | sh -s -- -y --default-toolchain="$TOOLCHAIN" --default-host="$HOST" --no-modify-path --verbose
