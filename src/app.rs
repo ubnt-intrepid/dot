@@ -38,7 +38,9 @@ impl App {
   }
 
   pub fn command_link(&self, dry_run: bool, verbose: bool) -> i32 {
-    check_symlink_privilege();
+    if !dry_run {
+      check_symlink_privilege();
+    }
 
     for entry in self.dotfiles.entries() {
       entry.mklink(dry_run, verbose).unwrap();
@@ -65,8 +67,8 @@ fn check_symlink_privilege() {
       }
     }
     ElevationType::Limited => {
-      println!("[debug] run as administrator");
-      let args: Vec<_> = env::args().skip(1).collect();
+      let mut args = vec!["--wait-prompt".to_owned()];
+      args.extend(env::args().skip(1));
       let status = runas::Command::new(env::current_exe().unwrap())
         .args(args.as_slice())
         .show(true)

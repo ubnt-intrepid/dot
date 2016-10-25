@@ -38,7 +38,7 @@ _dot() {
 
     case "${cmd}" in
         dot)
-            opts=" -h -V  --help --version   check link clean root clone help"
+            opts=" -h -V  --wait-prompt --help --version   check link clean root clone help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0

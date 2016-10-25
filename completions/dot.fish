@@ -11,6 +11,7 @@ function __fish_using_command
     return 1
 end
 
+complete -c dot -n '__fish_using_command dot' -l wait-prompt
 complete -c dot -n '__fish_using_command dot' -s h -l help -d 'Prints help information'
 complete -c dot -n '__fish_using_command dot' -s V -l version -d 'Prints version information'
 complete -c dot -n '__fish_using_command dot' -f -a 'check'

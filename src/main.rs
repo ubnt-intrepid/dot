@@ -35,7 +35,7 @@ pub fn _main() -> i32 {
   let matches = cli::build_cli().get_matches();
 
   let app = app::App::new(&dotdir);
-  match matches.subcommand() {
+  let retcode = match matches.subcommand() {
     ("check", Some(args)) => {
       let verbose = args.is_present("verbose");
       app.command_check(verbose)
@@ -63,5 +63,13 @@ pub fn _main() -> i32 {
     }
 
     (_, _) => unreachable!(),
+  };
+
+  if matches.is_present("wait-prompt") {
+    println!("press enter to exit...");
+    let mut s = String::new();
+    std::io::stdin().read_line(&mut s).ok().expect("failed to read a line.");
   }
+
+  retcode
 }

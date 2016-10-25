@@ -52,4 +52,7 @@ pub fn build_cli() -> App<'static, 'static> {
         .help("do not actually perform I/O operations")
         .long("dry-run")
         .short("n")))
+    .arg(Arg::with_name("wait-prompt")
+      .long("wait-prompt")
+      .hidden(true))
 }

@@ -6,6 +6,7 @@ _dot() {
 
 	local context curcontext="$curcontext" state line
     _arguments -s -S -C \
+"--wait-prompt[]" \
 "-h[Prints help information]" \
 "--help[Prints help information]" \
 "-V[Prints version information]" \
