@@ -1,29 +1,14 @@
 extern crate clap;
 
-use std::path::Path;
-use std::fs::OpenOptions;
-use clap::Shell;
-
-include!("src/cli.rs");
+#[path = "src/cli.rs"]
+mod cli;
 
 fn main() {
-  let mut file = OpenOptions::new()
-    .write(true)
-    .create(true)
-    .open(Path::new(env!("CARGO_MANIFEST_DIR"))
-      .join(concat!("_", env!("CARGO_PKG_NAME")))
-      .to_str()
-      .unwrap())
-    .unwrap();
-  build_cli().gen_completions_to(env!("CARGO_PKG_NAME"), Shell::Bash, &mut file);
+  let out_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("completions");
+  std::fs::create_dir_all(&out_dir).unwrap();
 
-  let mut file = OpenOptions::new()
-    .write(true)
-    .create(true)
-    .open(Path::new(env!("CARGO_MANIFEST_DIR"))
-      .join(concat!("zsh/_", env!("CARGO_PKG_NAME")))
-      .to_str()
-      .unwrap())
-    .unwrap();
-  build_cli().gen_completions_to(env!("CARGO_PKG_NAME"), Shell::Zsh, &mut file);
+  let pkg_name = env!("CARGO_PKG_NAME");
+  cli::build_cli().gen_completions(pkg_name, clap::Shell::Bash, &out_dir);
+  cli::build_cli().gen_completions(pkg_name, clap::Shell::Zsh, &out_dir);
+  cli::build_cli().gen_completions(pkg_name, clap::Shell::Fish, &out_dir);
 }
