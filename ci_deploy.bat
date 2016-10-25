@@ -1,8 +1,9 @@
 cargo build --release
 
-setx HOST -f host-triplet -a 0,0 > NUL
+set /p HOST=<host-triplet
 set FNAME=%TARGET%-%HOST%
 
+echo %FNAME%
 
 mkdir %FNAME%
 copy target\release\%TARGET%.exe .\%FNAME%\%TARGET%.exe
