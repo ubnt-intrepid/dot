@@ -16,7 +16,7 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "i686"   ]]; then export HOST=i686-apple-darwin; fi
 
 install:
-  - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --default-host ${HOST}
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
   - export PATH=~/.cargo/bin:$PATH
   - rustup target add ${HOST}
 
