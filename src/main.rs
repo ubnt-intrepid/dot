@@ -65,8 +65,8 @@ pub fn _main() -> i32 {
     ("completion", Some(args)) => {
       let shell = args.value_of("shell").unwrap();
       cli::build_cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-                                     shell.parse::<clap::Shell>().unwrap(),
-                                     &mut std::io::stdout());
+                                          shell.parse::<clap::Shell>().unwrap(),
+                                          &mut std::io::stdout());
       0
     }
 

@@ -194,7 +194,7 @@ pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
 
   match unsafe { kernel32::GetLastError() } {
     ERROR_SUCCESS => Ok(()),
-    _ => Err("[debug] failed to adjust token privilege"),
+    _ => Err("failed to adjust token privilege"),
   }
 }
 
@@ -203,14 +203,13 @@ pub fn is_elevated() -> Result<bool, &'static str> {
 
   let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
   let mut cb_size: u32 = mem::size_of_val(&elevation) as u32;
-  let ret =
-    unsafe {
-      GetTokenInformation(token.as_raw(),
-                          mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevation) as u32,
-                          mem::transmute(&mut elevation),
-                          mem::size_of_val(&elevation) as u32,
-                          &mut cb_size)
-    };
+  let ret = unsafe {
+    GetTokenInformation(token.as_raw(),
+                        mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevation) as u32,
+                        mem::transmute(&mut elevation),
+                        mem::size_of_val(&elevation) as u32,
+                        &mut cb_size)
+  };
   if ret == 0 {
     return Err("failed to get token information");
   }
@@ -230,14 +229,13 @@ pub fn get_elevation_type() -> Result<ElevationType, &'static str> {
 
   let mut elev_type = 0;
   let mut cb_size = mem::size_of_val(&elev_type) as u32;
-  let ret =
-    unsafe {
-      GetTokenInformation(token.as_raw(),
+  let ret = unsafe {
+    GetTokenInformation(token.as_raw(),
                         mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevationType) as u32,
                         mem::transmute(&mut elev_type),
                         mem::size_of_val(&elev_type) as u32,
                         &mut cb_size)
-    };
+  };
   if ret == 0 {
     return Err("failed to get token information");
   }
