@@ -18,7 +18,7 @@ before_install:
 install:
   - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
   - export PATH=~/.cargo/bin:$PATH
-  - rustup target add ${HOST}
+  - if ! [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "x86_64" ]]; then rustup target add ${HOST}; fi
 
 script:
   - cargo build --release --target=${HOST}
