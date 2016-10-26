@@ -115,3 +115,6 @@ pub static OS_NAME: &'static str = "darwin";
 
 #[cfg(target_os = "linux")]
 pub static OS_NAME: &'static str = "linux";
+
+#[cfg(target_os = "android")]
+pub static OS_NAME: &'static str = "linux";
