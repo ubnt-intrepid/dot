@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain beta
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
 export PATH=~/.cargo/bin:$PATH
 
 if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "x86_64" ]]; then
