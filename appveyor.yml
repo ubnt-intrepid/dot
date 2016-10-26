@@ -6,7 +6,7 @@ branches:
 
 environment:
   global:
-    TARGET: dot 
+    PKGNAME: dot 
     TOOLCHAIN: stable
   matrix:
     - HOST: i686-pc-windows-msvc
@@ -21,13 +21,20 @@ install:
 
 build_script:
   - cargo build --release --target=%HOST%
-  - .\ci_deploy.bat
+  - mkdir %PKGNAME%-%HOST%\bin
+  - mkdir %PKGNAME%-%HOST%\etc\bash_completion.d
+  - mkdir %PKGNAME%-%HOST%\share\zsh\site-functions
+  - mkdir %PKGNAME%-%HOST%\share\fish\completions
+  - copy target\%HOST%\release\%PKGNAME%.exe   .\%PKGNAME%-%HOST%\bin\%PKGNAME%.exe
+  - copy completions\%PKGNAME%.bash-completion .\%PKGNAME%-%HOST%\etc\bash_completion.d\%PKGNAME%
+  - copy completions\_%PKGNAME%                .\%PKGNAME%-%HOST%\share\zsh\site-functions\_%PKGNAME%
+  - copy completions\%PKGNAME%.fish            .\%PKGNAME%-%HOST%\share\fish\completions\%PKGNAME%.fish
 
 test_script:
   - cargo test --release --target=%HOST%
 
 artifacts:
-  - path: $(TARGET)-$(HOST)
+  - path: $(PKGNAME)-$(HOST)
 
 deploy:
   provider: GitHub

@@ -6,25 +6,37 @@ os:
   - osx
 
 env:
-  - ARCH=x86_64
-  - ARCH=i686
+  - PKGNAME=dot ARCH=x86_64
+  - PKGNAME=dot ARCH=i686
+
+before_install:
+  - if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "x86_64" ]]; then export HOST=x86_64-unknown-linux-musl; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "i686"   ]]; then export HOST=i686-unknown-linux-musl; fi
+  - if [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "x86_64" ]]; then export HOST=x86_64-apple-darwin; fi
+  - if [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "i686"   ]]; then export HOST=i686-apple-darwin; fi
 
 install:
-  - ./ci_install.sh
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --default-host ${HOST}
   - export PATH=~/.cargo/bin:$PATH
+  - rustup target add ${HOST}
 
 script:
-  - ./ci_build.sh
+  - cargo build --release --target=${HOST}
+  - cargo test  --release --target=${HOST}
 
 before_deploy:
- - ./ci_deploy.sh
- - "export TRAVIS_RELEASE_FILE=$(ls *.tar.gz)"
+  - mkdir -p ${PKGNAME}-${HOST}/{bin,etc/bash_completion.d,share/zsh/site-functions,share/fish/completions}
+  - cp target/${HOST}/release/${PKGNAME}      ${PKGNAME}-${HOST}/bin/
+  - cp completions/${PKGNAME}.bash-completion ${PKGNAME}-${HOST}/etc/bash_completion.d/${PKGNAME}
+  - cp completions/_${PKGNAME}                ${PKGNAME}-${HOST}/share/zsh/site-functions/
+  - cp completions/${PKGNAME}.fish            ${PKGNAME}-${HOST}/share/fish/completions/
+  - tar zcf ${PKGNAME}-${HOST}.tar.gz ${PKGNAME}-${HOST}/
 
 deploy:
   provider: releases
   api_key:
     secure: "H++t8gTlcNKJMYZ+0GVcmCU4aaVqjmlkZMZ1uan74utL+1qp1K4ufL8tN2+1gO3z0r2cMpL6edzB+QMieupK5kKtroKwun8PFuwGO9CSj67ZM/XHxl/C/GMgtQtab1vwScQxcAJ4TLc8EXDTkAPFhnXMPgoNB+jStyTb5E92fozmTbTSrxIXB2WhTbnp4Lt4PtqvtVYBAL67q7s9ualoWXZnBoeyko9CQtUAfIV8tgrySwnA6BbzEZ/grFP/xUw3Ia7Am0oO+6TNbGkONxte8HoqtlagLGNr5ytfBUNpRa1O5YC6o7tpOrbWIhAY3Zr3sUyhe+gc8cwU09y5UDC4uHjezbMuwlk7C1Czwm9lCYW1p+SGVUGZpC3COChFpHJkKPhIIKCuizNPGyZWjk0ZlerwYOuTCsnaY5MnajMs4WqOs8aT/dLCwoXG9G7fKjxRcnDfXMEZcf24H+73Y6/IrkuYY0jlWa+lbh5sIayb4PcIB5IwZhgIjF1LQE/4P3T0UX7rdK0nEajrmcGFiygCarZP4FAuDD9lrmanqRYTtNh92FOl4m2Sbqh213btzIC0TCzwWod7gWydze3d3cTUjOXjJUFYkAzZAVluB8pf5nTl81Nd4PztYyVDhXei+HEAiwrwucShvtEWrySXG3IapN20/PoM1CAXqyzR0IABEOQ="
-  file: "${TRAVIS_RELEASE_FILE}"
+  file: "${PKGNAME}-${HOST}.tar.gz"
   file_glob: true
   overwrite: true
   skip_cleanup: true

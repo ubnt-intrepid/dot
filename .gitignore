@@ -2,4 +2,4 @@ target/
 Cargo.lock
 *.tar.gz
 dot-*/
-host-triplet
+completions/
