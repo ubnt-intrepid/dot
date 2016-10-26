@@ -1,4 +1,4 @@
-language: rust
+language: generic
 sudo: false
 
 os:
@@ -7,7 +7,7 @@ os:
 
 env:
   - ARCH=x86_64
-  # - ARCH=i686
+  - ARCH=i686
 
 addons:
   apt:
@@ -15,14 +15,14 @@ addons:
       - gcc-multilib
 
 install:
-  - curl -sSL https://raw.githubusercontent.com/carllerche/travis-rust-matrix/master/test | bash
+  - ./ci_install.sh
+  - export PATH=~/.cargo/bin:$PATH
 
 script:
-  - cargo build --release
-  - cargo test --release
+  - ./ci_build.sh
 
 before_deploy:
-  - ./ci_deploy.sh
+ - ./ci_deploy.sh
   - "export TRAVIS_RELEASE_FILE=$(ls *.tar.gz)"
 
 deploy:
