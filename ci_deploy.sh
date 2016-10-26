@@ -8,7 +8,7 @@ if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "i686"   ]]; then export TARGET=i68
 fname="dot-$TARGET"
 
 mkdir -p $fname
-cp target/release/dot $fname/
+cp target/$TARGET/release/dot $fname/
 cp completions/* $fname/
 
 tar zcf ${fname}.tar.gz $fname/
