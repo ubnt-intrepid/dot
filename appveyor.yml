@@ -16,11 +16,12 @@ install:
   - ps: Start-FileDownload 'https://static.rust-lang.org/rustup/dist/i686-pc-windows-msvc/rustup-init.exe'
   - rustup-init.exe --no-modify-path --default-toolchain=%TOOLCHAIN% --default-host=%HOST% -y --verbose
   - SET PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - if NOT "%HOST%" == "x86_64-pc-windows-msvc" rustup target add %HOST%
   - rustc -V
   - cargo -V
 
 build_script:
-  - cargo build --release
+  - cargo build --release --target=%HOST%
   - .\ci_deploy.bat
 
 test_script:

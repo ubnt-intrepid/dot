@@ -7,8 +7,6 @@ if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "i686"   ]]; then export TARGET=i68
  
 fname="dot-$TARGET"
 
-cargo build --release
-
 mkdir -p $fname
 cp target/release/dot $fname/
 cp completions/* $fname/
