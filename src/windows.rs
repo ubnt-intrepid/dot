@@ -165,27 +165,16 @@ impl Drop for Sid {
 }
 
 
-pub fn enable_privilege(name: &str) -> bool {
+pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
   // 1. retrieve the process token of current process.
-  let h_token = match open_process_token(winnt::TOKEN_ADJUST_PRIVILEGES | winnt::TOKEN_QUERY) {
-    Some(h) => h,
-    None => return false,
-  };
+  let token = try!(open_process_token(winnt::TOKEN_ADJUST_PRIVILEGES | winnt::TOKEN_QUERY));
 
   // 2. retrieve a LUID for given priviledge
-  let mut luid = LUID {
-    LowPart: 0,
-    HighPart: 0,
-  };
-  let ret = unsafe {
-    let name = CString::new(name).unwrap();
-    advapi32::LookupPrivilegeValueA(null(), name.as_ptr(), &mut luid)
-  };
-  if ret == 0 {
-    return false;
-  }
+  let luid = try!(lookup_privilege_value(name));
 
-  let token_privileges = vec![0u8; mem::size_of::<winnt::TOKEN_PRIVILEGES>() + 1];
+  let len = mem::size_of::<winnt::TOKEN_PRIVILEGES>() +
+            1 * mem::size_of::<winnt::LUID_AND_ATTRIBUTES>();
+  let token_privileges = vec![0u8; len];
   unsafe {
     let mut p = token_privileges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES;
     let mut la = (*p).Privileges.as_ptr() as *mut winnt::LUID_AND_ATTRIBUTES;
@@ -195,7 +184,7 @@ pub fn enable_privilege(name: &str) -> bool {
   }
 
   unsafe {
-    advapi32::AdjustTokenPrivileges(h_token.as_raw(),
+    advapi32::AdjustTokenPrivileges(token.as_raw(),
                                     0,
                                     token_privileges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES,
                                     0,
@@ -203,29 +192,30 @@ pub fn enable_privilege(name: &str) -> bool {
                                     null_mut());
   }
 
-  (unsafe { kernel32::GetLastError() }) == ERROR_SUCCESS
+  match unsafe { kernel32::GetLastError() } {
+    ERROR_SUCCESS => Ok(()),
+    _ => Err("[debug] failed to adjust token privilege"),
+  }
 }
 
-pub fn is_elevated() -> bool {
-  let token = match open_process_token(winnt::TOKEN_QUERY) {
-    Some(h) => h,
-    None => return false,
-  };
+pub fn is_elevated() -> Result<bool, &'static str> {
+  let token = try!(open_process_token(winnt::TOKEN_QUERY));
 
   let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
   let mut cb_size: u32 = mem::size_of_val(&elevation) as u32;
-  let ret = unsafe {
-    GetTokenInformation(token.as_raw(),
-                        mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevation) as u32,
-                        mem::transmute(&mut elevation),
-                        mem::size_of_val(&elevation) as u32,
-                        &mut cb_size)
-  };
+  let ret =
+    unsafe {
+      GetTokenInformation(token.as_raw(),
+                          mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevation) as u32,
+                          mem::transmute(&mut elevation),
+                          mem::size_of_val(&elevation) as u32,
+                          &mut cb_size)
+    };
   if ret == 0 {
-    return false;
+    return Err("failed to get token information");
   }
 
-  elevation.TokenIsElevated != 0
+  Ok(elevation.TokenIsElevated != 0)
 }
 
 #[derive(Debug, PartialEq)]
@@ -235,40 +225,52 @@ pub enum ElevationType {
   Limited,
 }
 
-pub fn get_elevation_type() -> Option<ElevationType> {
-  let token = match open_process_token(winnt::TOKEN_QUERY) {
-    Some(h) => h,
-    None => return None,
-  };
+pub fn get_elevation_type() -> Result<ElevationType, &'static str> {
+  let token = try!(open_process_token(winnt::TOKEN_QUERY));
 
   let mut elev_type = 0;
   let mut cb_size = mem::size_of_val(&elev_type) as u32;
-  let ret = unsafe {
-    GetTokenInformation(token.as_raw(),
+  let ret =
+    unsafe {
+      GetTokenInformation(token.as_raw(),
                         mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevationType) as u32,
                         mem::transmute(&mut elev_type),
                         mem::size_of_val(&elev_type) as u32,
                         &mut cb_size)
-  };
+    };
   if ret == 0 {
-    return None;
+    return Err("failed to get token information");
   }
 
   match elev_type {
-    1 => Some(ElevationType::Default),      // default (standard user/ administrator without UAC)
-    2 => Some(ElevationType::Full),         // full access (administrator, not elevated)
-    3 => Some(ElevationType::Limited),      // limited access (administrator, not elevated)
-    _ => None,
+    1 => Ok(ElevationType::Default),      // default (standard user/ administrator without UAC)
+    2 => Ok(ElevationType::Full),         // full access (administrator, not elevated)
+    3 => Ok(ElevationType::Limited),      // limited access (administrator, not elevated)
+    _ => Err("unknown elevation type"),
   }
 }
 
-fn open_process_token(token_type: u32) -> Option<Handle> {
+fn open_process_token(token_type: u32) -> Result<Handle, &'static str> {
   let mut h_token = null_mut();
   let ret =
     unsafe { advapi32::OpenProcessToken(kernel32::GetCurrentProcess(), token_type, &mut h_token) };
-  if ret == 0 {
-    return None;
+  match ret {
+    0 => Err("failed to get process token"),
+    _ => Ok(Handle::new(h_token)),
   }
+}
 
-  Some(Handle::new(h_token))
+fn lookup_privilege_value(name: &str) -> Result<LUID, &'static str> {
+  let mut luid = LUID {
+    LowPart: 0,
+    HighPart: 0,
+  };
+  let ret = unsafe {
+    let name = CString::new(name).unwrap();
+    advapi32::LookupPrivilegeValueA(null(), name.as_ptr(), &mut luid)
+  };
+  match ret {
+    0 => Err("failed to get the privilege value"),
+    _ => Ok(luid),
+  }
 }

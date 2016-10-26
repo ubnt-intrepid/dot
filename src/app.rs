@@ -62,8 +62,9 @@ fn check_symlink_privilege() {
   use windows::ElevationType;
   match windows::get_elevation_type().unwrap() {
     ElevationType::Default => {
-      if !windows::enable_privilege("SeCreateSymbolicLinkPrivilege") {
-        panic!("failed to enable SeCreateSymbolicLinkPrivilege");
+      match windows::enable_privilege("SeCreateSymbolicLinkPrivilege") {
+        Ok(_) => (),
+        Err(err) => panic!("failed to enable SeCreateSymbolicLinkPrivilege: {}", err),
       }
     }
     ElevationType::Limited => {
