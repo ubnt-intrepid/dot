@@ -22,6 +22,9 @@ _dot() {
             clone)
                 cmd+="_clone"
                 ;;
+            completion)
+                cmd+="_completion"
+                ;;
             help)
                 cmd+="_help"
                 ;;
@@ -38,7 +41,7 @@ _dot() {
 
     case "${cmd}" in
         dot)
-            opts=" -h -V  --wait-prompt --help --version   check link clean root clone help"
+            opts=" -h -V  --wait-prompt --help --version   check link clean root clone completion help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
@@ -85,6 +88,21 @@ _dot() {
             ;;
         dot_clone)
             opts=" -n -h -V  --dry-run --help --version  <url> <dotdir> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
+        dot_completion)
+            opts=" -h -V  --help --version  <shell> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0

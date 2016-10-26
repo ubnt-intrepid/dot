@@ -62,6 +62,14 @@ pub fn _main() -> i32 {
       app.command_clone(url, dotdir, dry_run)
     }
 
+    ("completion", Some(args)) => {
+      let shell = args.value_of("shell").unwrap();
+      cli::build_cli().gen_completions_to(env!("CARGO_PKG_NAME"),
+                                     shell.parse::<clap::Shell>().unwrap(),
+                                     &mut std::io::stdout());
+      0
+    }
+
     (_, _) => unreachable!(),
   };
 

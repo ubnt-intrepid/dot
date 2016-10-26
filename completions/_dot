@@ -71,6 +71,15 @@ _arguments -s -S -C \
 "1:: :_dot_clone_commands" \
 && ret=0
 ;;
+(completion)
+_arguments -s -S -C \
+"-h[Prints help information]" \
+"--help[Prints help information]" \
+"-V[Prints version information]" \
+"--version[Prints version information]" \
+"1:: :_dot_completion_commands" \
+&& ret=0
+;;
 (help)
 _arguments -s -S -C \
 "-h[Prints help information]" \
@@ -92,6 +101,7 @@ _dot_commands() {
 "clean:Remote all of registered links from home directory" \
 "root:Show the location of dotfiles repository and exit" \
 "clone:Clone dotfiles repository from remote" \
+"completion:Generate completion scripts" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'dot commands' commands "$@"
@@ -117,6 +127,13 @@ _dot_clone_commands() {
 "DOTDIR:Path of cloned repository (default: '$DOT_DIR')" \
     )
     _describe -t commands 'dot clone commands' commands "$@"
+}
+(( $+functions[_dot_completion_commands] )) ||
+_dot_completion_commands() {
+    local commands; commands=(
+        "SHELL:target shell" \
+    )
+    _describe -t commands 'dot completion commands' commands "$@"
 }
 (( $+functions[_dot_help_commands] )) ||
 _dot_help_commands() {
