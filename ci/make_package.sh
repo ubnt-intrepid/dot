@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-export PKGNAME=dot
-export HOST=arm-linux-androideabi
+export PKGNAME=${PKGNAME:-dot}
+export HOST=${HOST:-arm-linux-androideabi}
 
 cargo build --release --target=$HOST
 

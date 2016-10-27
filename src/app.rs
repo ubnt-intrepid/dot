@@ -1,11 +1,12 @@
-use std::env;
 use std::path::Path;
-use std::process;
-use runas;
 use dotfiles::Dotfiles;
 use util;
+
+#[cfg(windows)]
+use runas;
 #[cfg(windows)]
 use windows;
+
 
 pub struct App {
   dotfiles: Dotfiles,
@@ -59,7 +60,10 @@ impl App {
 
 #[cfg(windows)]
 fn check_symlink_privilege() {
+  use std::env;
+  use std::process;
   use windows::ElevationType;
+
   match windows::get_elevation_type().unwrap() {
     ElevationType::Default => {
       match windows::enable_privilege("SeCreateSymbolicLinkPrivilege") {
