@@ -1,7 +1,8 @@
 # dot.rs
 
-[![Build Status](https://travis-ci.org/ubnt-intrepid/dot.rs.svg?branch=master)](https://travis-ci.org/ubnt-intrepid/dot.rs)
-[![Build status](https://ci.appveyor.com/api/projects/status/bh02mka0to2e6wsi/branch/master?svg=true)](https://ci.appveyor.com/project/ubnt-intrepid/dot-rs/branch/master)
+| Travis | Appveyor | Wercker |
+|:------:|:--------:|:-------:|
+| [![Build Status](https://travis-ci.org/ubnt-intrepid/dot.rs.svg?branch=master)](https://travis-ci.org/ubnt-intrepid/dot.rs)  | [![Build status](https://ci.appveyor.com/api/projects/status/bh02mka0to2e6wsi/branch/master?svg=true)](https://ci.appveyor.com/project/ubnt-intrepid/dot-rs/branch/master) | [![wercker status](https://app.wercker.com/status/2c423ff1fdddb547df42c1963c525aba/s/master "wercker status")](https://app.wercker.com/project/byKey/2c423ff1fdddb547df42c1963c525aba) |
 
 `dot.rs` is a tiny CLI tool for management of dotfiles, written in Rust.
 
