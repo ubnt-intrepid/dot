@@ -2,7 +2,7 @@ use std::env;
 use std::io::{self, Read};
 use std::fs::{self, File};
 use std::process::{Command, Stdio};
-use std::path::Path;
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use shellexpand::{self, LookupError};
 use toml;
 
@@ -118,3 +118,15 @@ pub static OS_NAME: &'static str = "linux";
 
 #[cfg(target_os = "android")]
 pub static OS_NAME: &'static str = "linux";
+
+
+// create an instance of PathBuf from string.
+pub fn make_pathbuf(path: &str) -> PathBuf {
+  let path = path.replace("/", &format!("{}", MAIN_SEPARATOR));
+  Path::new(&path).to_path_buf()
+}
+
+pub fn is_symlink<P: AsRef<Path>>(path: P) -> Result<bool, io::Error> {
+  let meta = try!(path.as_ref().symlink_metadata());
+  Ok(meta.file_type().is_symlink())
+}
