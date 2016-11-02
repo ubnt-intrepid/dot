@@ -9,21 +9,16 @@
 This project is based on [ssh0](https://github.com/ssh0)'s [dot](https://github.com/ssh0/dot), and
 inspired by [rhysd](https://github.com/rhysd)'s [dotfiles](https://github.com/rhysd/dotfiles).
 
-## Getting started
-```shell-session
-$ git clone https://github.com/ubnt-intrepid/dot.rs.git
-$ cd dot.rs
-$ cargo install
-```
-
-1. Clone your dotfiles repository (`dot clone`).
-1. Create all of the link (`dot link`)
+## Usage
+Firstly, you must clone your own dotfiles repository by using `git` command.
+And then, use `dot link` to create symbolic links.
 
 ```shell-session
-$ export DOT_DIR=/home/example/.dotfiles
-$ dot clone https://github.com/example/dotfiles.git $DOT_DIR
+$ git clone https://github.com/example/dotfiles.git
 $ dot link
 ```
+By default, the location of dotfiles repository is `$HOME/.dotfiles`.
+The location can be specified by using environment variable `$DOT_DIR`.
 
 ## Commands
 * `link [-v | --verbose] [-n | --dry-run]`  
@@ -40,10 +35,11 @@ $ dot link
 If you want more information, type `dot help`.
 
 ## Configuration
-See also [my dotfiles](https://github.com/ubnt-intrepid/.dotfiles).
+You must specify all of the mappings from files in dotfiles to the desired path, in `$DOT_DIR/.mappings`.
+An example of `.mappings` is as follows:
 
 ```toml
-# $DOT_DIR/.entries
+# $DOT_DIR/.mappings
 
 [general]
 gitconfig   = "~/.gitconfig"
@@ -57,6 +53,20 @@ powershell = "$HOME/Documents/WindowsPowerShell"
 
 [linux]
 xinitrc = "~/.xinitrc"
+```
+
+Mappings at the section `[general]` are avaialble at any environment.
+On the other hand, items at the other section (`[windows]`, `[linux]`) only apply specified platform.
+The value of environment variables in each items are extracted.
+
+See also [my dotfiles](https://github.com/ubnt-intrepid/.dotfiles) for details.
+
+## Installation
+Precompiled binaries are located at [GitHub releases page](https://github.com/ubnt-intrepid/dot.rs/releases/latest).
+If you want to use development version, try `cargo install` to build from source, as follows:
+
+```shell-session
+$ cargo install --git clone https://github.com/ubnt-intrepid/dot.rs.git
 ```
 
 ## License
