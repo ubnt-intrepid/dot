@@ -23,8 +23,6 @@ install:
 script:
   - cargo build --release --target=${HOST}
   - cargo test  --release --target=${HOST}
-
-before_deploy:
   - bash ./ci/make_package.sh
 
 deploy:
