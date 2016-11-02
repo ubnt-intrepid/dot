@@ -69,6 +69,17 @@ pub fn _main() -> i32 {
       app.command_clone(url, dotdir, dry_run)
     }
 
+    ("init", Some(args)) => {
+      let url = args.value_of("url").unwrap();
+      let dotdir = args.value_of("dotdir");
+      let dry_run = args.is_present("dry-run");
+      let ret = app.command_clone(url, dotdir, dry_run);
+      if ret != 0 {
+        return ret;
+      }
+      app.command_link(dry_run, true)
+    }
+
     ("completion", Some(args)) => {
       let shell = args.value_of("shell").unwrap();
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
@@ -166,6 +177,19 @@ fn cli() -> App<'static, 'static> {
       .about("Show the location of dotfiles repository and exit"))
     .subcommand(SubCommand::with_name("clone")
       .about("Clone dotfiles repository from remote")
+      .arg(Arg::with_name("url")
+        .help("URL of remote repository")
+        .required(true)
+        .takes_value(true))
+      .arg(Arg::with_name("dotdir")
+        .help("Path of cloned repository (default: '$DOT_DIR')")
+        .takes_value(true))
+      .arg(Arg::with_name("dry-run")
+        .help("do not actually perform I/O operations")
+        .long("dry-run")
+        .short("n")))
+    .subcommand(SubCommand::with_name("init")
+      .about("Clone dotfiles repository from remote & make links")
       .arg(Arg::with_name("url")
         .help("URL of remote repository")
         .required(true)
