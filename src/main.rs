@@ -77,23 +77,22 @@ pub fn _main() -> i32 {
       0
     }
 
-    ("install", Some(args)) => {
-      let root = args.value_of("root").unwrap_or("~/.local");
-      let root = util::expand_full(root).unwrap();
-
+    ("install", _) => {
       // Bash completion
-      // let target_dir = Path::new(&root).join("share/bash_completion/completions");
-      // fs::create_dir_all(&target_dir).unwrap();
-      // cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-      //                          clap::Shell::Bash,
-      //                          &mut fs::OpenOptions::new()
-      //                            .write(true)
-      //                            .create(true)
-      //                            .open(target_dir.join(env!("CARGO_PKG_NAME")))
-      //                            .unwrap());
+      let target_dir = util::expand_full("~/.local/share/bash_completion/completions").unwrap();
+      let target_dir = Path::new(&target_dir);
+      fs::create_dir_all(&target_dir).unwrap();
+      cli().gen_completions_to(env!("CARGO_PKG_NAME"),
+                               clap::Shell::Bash,
+                               &mut fs::OpenOptions::new()
+                                 .write(true)
+                                 .create(true)
+                                 .open(target_dir.join(env!("CARGO_PKG_NAME")))
+                                 .unwrap());
 
       // Zsh completion
-      let target_dir = Path::new(&root).join("share/zsh/site-functions");
+      let target_dir = util::expand_full("~/.local/share/zsh/site-functions").unwrap();
+      let target_dir = Path::new(&target_dir);
       fs::create_dir_all(&target_dir).unwrap();
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
                                clap::Shell::Zsh,
@@ -104,7 +103,8 @@ pub fn _main() -> i32 {
                                  .unwrap());
 
       // Fish completion
-      let target_dir = Path::new(&root).join("share/fish/generated_completions");
+      let target_dir = util::expand_full("~/.config/fish/completions").unwrap();
+      let target_dir = Path::new(&target_dir);
       fs::create_dir_all(&target_dir).unwrap();
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
                                clap::Shell::Fish,
@@ -185,10 +185,7 @@ fn cli() -> App<'static, 'static> {
         .required(true)
         .possible_values(&["bash", "fish", "zsh"])))
     .subcommand(SubCommand::with_name("install")
-      .about("install completion scripts to home directory")
-      .arg(Arg::with_name("root")
-        .help("target directory for installation")
-        .long("root")))
+      .about("install completion scripts into your home directory"))
     .arg(Arg::with_name("wait-prompt")
       .long("wait-prompt")
       .hidden(true))
