@@ -23,6 +23,6 @@ build:
           python --version
 
     - script:
-        name: build target
+        name: build and package the target
         code: |
-          cargo build --release --target=arm-linux-androideabi
+          bash ./ci/make_package.sh
