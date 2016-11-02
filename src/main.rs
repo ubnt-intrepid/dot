@@ -13,7 +13,6 @@ extern crate kernel32;
 extern crate runas;
 
 mod app;
-mod cli;
 mod dotfiles;
 mod entry;
 mod util;
@@ -21,6 +20,7 @@ mod util;
 mod windows;
 
 use std::env;
+use clap::{Arg, App, AppSettings, SubCommand};
 
 
 pub fn main() {
@@ -37,7 +37,7 @@ pub fn _main() -> i32 {
   env::set_var("DOT_DIR", dotdir.as_str());
   env::set_var("dotdir", dotdir.as_str());
 
-  let matches = cli::build_cli().get_matches();
+  let matches = cli().get_matches();
 
   let app = app::App::new(&dotdir);
   let retcode = match matches.subcommand() {
@@ -69,9 +69,9 @@ pub fn _main() -> i32 {
 
     ("completion", Some(args)) => {
       let shell = args.value_of("shell").unwrap();
-      cli::build_cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-                                          shell.parse::<clap::Shell>().unwrap(),
-                                          &mut std::io::stdout());
+      cli().gen_completions_to(env!("CARGO_PKG_NAME"),
+                               shell.parse::<clap::Shell>().unwrap(),
+                               &mut std::io::stdout());
       0
     }
 
@@ -85,4 +85,64 @@ pub fn _main() -> i32 {
   }
 
   retcode
+}
+
+fn cli() -> App<'static, 'static> {
+  App::new(env!("CARGO_PKG_NAME"))
+    .about(env!("CARGO_PKG_DESCRIPTION"))
+    .version(env!("CARGO_PKG_VERSION"))
+    .author(env!("CARGO_PKG_AUTHORS"))
+    .setting(AppSettings::VersionlessSubcommands)
+    .setting(AppSettings::SubcommandRequiredElseHelp)
+    .subcommand(SubCommand::with_name("check")
+      .about("Check the files are correctly linked to the right places")
+      .arg(Arg::with_name("verbose")
+        .help("Use verbose output")
+        .long("verbose")
+        .short("v")))
+    .subcommand(SubCommand::with_name("link")
+      .about("Create all of the symbolic links into home directory")
+      .arg(Arg::with_name("dry-run")
+        .help("do not actually perform I/O operations")
+        .long("dry-run")
+        .short("n"))
+      .arg(Arg::with_name("verbose")
+        .help("Use verbose output")
+        .long("verbose")
+        .short("v")))
+    .subcommand(SubCommand::with_name("clean")
+      .about("Remote all of registered links from home directory")
+      .arg(Arg::with_name("dry-run")
+        .help("do not actually perform I/O operations")
+        .long("dry-run")
+        .short("n"))
+      .arg(Arg::with_name("verbose")
+        .help("Use verbose output")
+        .long("verbose")
+        .short("v")))
+    .subcommand(SubCommand::with_name("root")
+      .about("Show the location of dotfiles repository and exit"))
+    .subcommand(SubCommand::with_name("clone")
+      .about("Clone dotfiles repository from remote")
+      .arg(Arg::with_name("url")
+        .help("URL of remote repository")
+        .required(true)
+        .takes_value(true))
+      .arg(Arg::with_name("dotdir")
+        .help("Path of cloned repository (default: '$DOT_DIR')")
+        .takes_value(true))
+      .arg(Arg::with_name("dry-run")
+        .help("do not actually perform I/O operations")
+        .long("dry-run")
+        .short("n")))
+    .subcommand(SubCommand::with_name("completion")
+      .about("Generate completion scripts")
+      .setting(AppSettings::ArgRequiredElseHelp)
+      .arg(Arg::with_name("shell")
+        .help("target shell")
+        .required(true)
+        .possible_values(&["bash", "fish", "zsh"])))
+    .arg(Arg::with_name("wait-prompt")
+      .long("wait-prompt")
+      .hidden(true))
 }
