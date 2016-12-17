@@ -40,6 +40,7 @@ esac
 DOTRS_URL="`curl -s https://api.github.com/repos/ubnt-intrepid/dot.rs/releases | grep browser_download_url | cut -d '"' -f 4 | grep "$DOTRS_SUFFIX" | head -n 1`"
 echo "$DOTRS_URL"
 
+mkdir -p "${PREFIX}/bin"
 curl -sL "${DOTRS_URL}" | tar xz -C "$PREFIX/bin/" --strip=1 './dot'
 
 export PATH="$PREFIX/bin:$PATH"
