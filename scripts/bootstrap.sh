@@ -20,32 +20,30 @@ export DOT_DIR
 # --- download `dot.rs` from GitHub Releases and install
 case `uname -s | tr '[A-Z]' '[a-z]'` in
   *mingw* | *msys*)
-    SUFFIX="`uname -m`-windows-msvc"
+    DOTRS_SUFFIX="`uname -m`-windows-msvc"
     ;;
   *darwin*)
-    SUFFIX="`uname -m`-apple-darwin"
+    DOTRS_SUFFIX="`uname -m`-apple-darwin"
     ;;
   *linux*)
-    SUFFIX="`uname -m`-unknown-linux-musl"
+    DOTRS_SUFFIX="`uname -m`-unknown-linux-musl"
     ;;
   *android*)
     # TODO: support for other architectures
-    SUFFIX="arm-linux-androideabi"
+    DOTRS_SUFFIX="arm-linux-androideabi"
     ;;
   *)
     echo "[fatal] cannot recognize the platform."
     exit 1
 esac
 
-VERSION="`curl -sI https://github.com/ubnt-intrepid/dot.rs/releases/latest | awk -F'/' '/^Location:/{print $NF}'`"
+DOTRS_URL="`curl -s https://api.github.com/repos/ubnt-intrepid/dot.rs/releases | grep browser_download_url | cut -d '"' -f 4 | grep "$DOTRS_SUFFIX" | head -n 1`"
+echo "$DOTRS_URL"
 
-mkdir -p "$PREFIX/bin"
-
-curl -sL "https://github.com/ubnt-intrepid/dot.rs/releases/download/${VERSION}/dot-${SUFFIX}.tar.gz" \
-  | tar xz -C "$PREFIX/bin/" --strip=1 '*/dot'
+curl -sL "${DOTRS_URL}" | tar xz -C "$PREFIX/bin/" --strip=1 './dot'
 
 export PATH="$PREFIX/bin:$PATH"
 
 # --- clone your dotfiles into home directory, and make links.
-git clone "$DOT_URL" "$DOT_DIR"
+[[ -d "$DOT_DIR" ]] || git clone "$DOT_URL" "$DOT_DIR"
 dot link --verbose
