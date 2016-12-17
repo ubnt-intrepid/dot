@@ -33,7 +33,7 @@ case `uname -s | tr '[A-Z]' '[a-z]'` in
     exit 1
 esac
 mkdir -p "$PREFIX/bin" && cd "$PREFIX/bin"
-curl -L "https://github.com/ubnt-intrepid/dot.rs/releases/download/latest/dot-${SUFFIX}.tar.gz" | tar xf
+curl -L "https://github.com/ubnt-intrepid/dot.rs/releases/download/latest/dot-${SUFFIX}.tar.gz" | tar xzf -
 
 
 export PATH="$PREFIX/bin:$PATH"
@@ -41,6 +41,6 @@ export PATH="$PREFIX/bin:$PATH"
 # --- clone your dotfiles into home directory
 export DOT_DIR
 
-git clone "$DOTURL" "$DOT_DIR"
+git clone "$DOT_URL" "$DOT_DIR"
 
 dot link --verbose
