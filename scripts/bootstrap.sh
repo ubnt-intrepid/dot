@@ -6,14 +6,18 @@
 # Repository URL of your dotfiles.
 DOT_URL=${DOT_URL:-"https://github.com/ubnt-intrepid/.dotfiles.git"}
 
-# 
+#
 DOT_DIR=${DOT_DIR:-"$HOME/.dotfiles"}
 
 # installation directory of `dot`
 PREFIX=${PREFIX:-"$HOME/.local"}
 
 
-# --- install dot.rs
+# --- export as environment variables
+export DOT_DIR
+
+
+# --- download `dot.rs` from GitHub Releases and install
 case `uname -s | tr '[A-Z]' '[a-z]'` in
   *mingw* | *msys*)
     SUFFIX="`uname -m`-windows-msvc"
@@ -32,15 +36,16 @@ case `uname -s | tr '[A-Z]' '[a-z]'` in
     echo "[fatal] cannot recognize the platform."
     exit 1
 esac
-mkdir -p "$PREFIX/bin" && cd "$PREFIX/bin"
-curl -L "https://github.com/ubnt-intrepid/dot.rs/releases/download/latest/dot-${SUFFIX}.tar.gz" | tar xzf -
 
+VERSION="`curl -sI https://github.com/ubnt-intrepid/dot.rs/releases/latest | awk -F'/' '/^Location:/{print $NF}'`"
+
+mkdir -p "$PREFIX/bin"
+
+curl -sL "https://github.com/ubnt-intrepid/dot.rs/releases/download/${VERSION}/dot-${SUFFIX}.tar.gz" \
+  | tar xz -C "$PREFIX/bin/" --strip=1 '*/dot'
 
 export PATH="$PREFIX/bin:$PATH"
 
-# --- clone your dotfiles into home directory
-export DOT_DIR
-
+# --- clone your dotfiles into home directory, and make links.
 git clone "$DOT_URL" "$DOT_DIR"
-
 dot link --verbose
