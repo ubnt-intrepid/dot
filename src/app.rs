@@ -10,17 +10,23 @@ use windows;
 
 pub struct App {
   dotfiles: Dotfiles,
+  dry_run: bool,
+  verbose: bool,
 }
 
 impl App {
-  pub fn new(dotdir: &str) -> App {
+  pub fn new(dotdir: &str, dry_run: bool, verbose: bool) -> App {
     let dotfiles = Dotfiles::new(Path::new(dotdir).to_path_buf());
-    App { dotfiles: dotfiles }
+    App {
+      dotfiles: dotfiles,
+      dry_run: dry_run,
+      verbose: verbose,
+    }
   }
 
-  pub fn command_clone(&self, url: &str, dotdir: Option<&str>, dry_run: bool) -> i32 {
+  pub fn command_clone(&self, url: &str, dotdir: Option<&str>) -> i32 {
     let dotdir = dotdir.unwrap_or(self.dotfiles.root_dir().to_str().unwrap());
-    util::wait_exec("git", &["clone", url, dotdir], None, dry_run).unwrap()
+    util::wait_exec("git", &["clone", url, dotdir], None, self.dry_run).unwrap()
   }
 
   pub fn command_root(&self) -> i32 {
@@ -28,30 +34,30 @@ impl App {
     0
   }
 
-  pub fn command_check(&self, verbose: bool) -> i32 {
+  pub fn command_check(&self) -> i32 {
     let mut num_unhealth = 0;
     for entry in self.dotfiles.entries() {
-      if entry.check(verbose).unwrap() == false {
+      if entry.check(self.verbose).unwrap() == false {
         num_unhealth += 1;
       }
     }
     num_unhealth
   }
 
-  pub fn command_link(&self, dry_run: bool, verbose: bool) -> i32 {
-    if !dry_run {
+  pub fn command_link(&self) -> i32 {
+    if !self.dry_run {
       check_symlink_privilege();
     }
 
     for entry in self.dotfiles.entries() {
-      entry.mklink(dry_run, verbose).unwrap();
+      entry.mklink(self.dry_run, self.verbose).unwrap();
     }
     0
   }
 
-  pub fn command_clean(&self, dry_run: bool, verbose: bool) -> i32 {
+  pub fn command_clean(&self) -> i32 {
     for entry in self.dotfiles.entries() {
-      entry.unlink(dry_run, verbose).unwrap();
+      entry.unlink(self.dry_run, self.verbose).unwrap();
     }
     0
   }
