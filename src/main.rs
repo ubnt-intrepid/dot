@@ -1,11 +1,7 @@
 extern crate dot;
 extern crate clap;
 
-use std::env;
-use std::fs;
-use std::path::Path;
 use clap::{Arg, App, AppSettings, SubCommand};
-use dot::util::expand_full;
 use dot::app;
 
 pub fn main() {
@@ -14,13 +10,7 @@ pub fn main() {
 }
 
 pub fn _main() -> i32 {
-  if env::var("HOME").is_err() {
-    env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
-  }
-
-  let dotdir = env::var("DOT_DIR").or(expand_full("$HOME/.dotfiles")).unwrap();
-  env::set_var("DOT_DIR", dotdir.as_str());
-  env::set_var("dotdir", dotdir.as_str());
+  let dotdir = dot::init_envs();
 
   let matches = cli().get_matches();
 
@@ -68,46 +58,6 @@ pub fn _main() -> i32 {
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
                                shell.parse::<clap::Shell>().unwrap(),
                                &mut std::io::stdout());
-      0
-    }
-
-    ("install", _) => {
-      // Bash completion
-      let target_dir = expand_full("~/.local/share/bash_completion/completions").unwrap();
-      let target_dir = Path::new(&target_dir);
-      fs::create_dir_all(&target_dir).unwrap();
-      cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-                               clap::Shell::Bash,
-                               &mut fs::OpenOptions::new()
-                                 .write(true)
-                                 .create(true)
-                                 .open(target_dir.join(env!("CARGO_PKG_NAME")))
-                                 .unwrap());
-
-      // Zsh completion
-      let target_dir = expand_full("~/.local/share/zsh/site-functions").unwrap();
-      let target_dir = Path::new(&target_dir);
-      fs::create_dir_all(&target_dir).unwrap();
-      cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-                               clap::Shell::Zsh,
-                               &mut fs::OpenOptions::new()
-                                 .write(true)
-                                 .create(true)
-                                 .open(target_dir.join(concat!("_", env!("CARGO_PKG_NAME"))))
-                                 .unwrap());
-
-      // Fish completion
-      let target_dir = expand_full("~/.config/fish/completions").unwrap();
-      let target_dir = Path::new(&target_dir);
-      fs::create_dir_all(&target_dir).unwrap();
-      cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-                               clap::Shell::Fish,
-                               &mut fs::OpenOptions::new()
-                                 .write(true)
-                                 .create(true)
-                                 .open(target_dir.join(concat!(env!("CARGO_PKG_NAME"), ".fish")))
-                                 .unwrap());
-
       0
     }
 
@@ -190,9 +140,7 @@ fn cli() -> App<'static, 'static> {
       .arg(Arg::with_name("shell")
         .help("target shell")
         .required(true)
-        .possible_values(&["bash", "fish", "zsh"])))
-    .subcommand(SubCommand::with_name("install")
-      .about("install completion scripts into your home directory"))
+        .possible_values(&["bash", "fish", "zsh", "powershell"])))
     .arg(Arg::with_name("wait-prompt")
       .long("wait-prompt")
       .hidden(true))
