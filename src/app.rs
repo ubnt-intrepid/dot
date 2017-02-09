@@ -1,3 +1,4 @@
+use std::env;
 use std::path::Path;
 use dotfiles::Dotfiles;
 use util;
@@ -15,13 +16,14 @@ pub struct App {
 }
 
 impl App {
-  pub fn new(dotdir: &str, dry_run: bool, verbose: bool) -> App {
-    let dotfiles = Dotfiles::new(Path::new(dotdir).to_path_buf());
-    App {
+  pub fn new(dry_run: bool, verbose: bool) -> Result<App, String> {
+    let dotdir = init_envs()?;
+    let dotfiles = Dotfiles::new(Path::new(&dotdir).to_path_buf());
+    Ok(App {
       dotfiles: dotfiles,
       dry_run: dry_run,
       verbose: verbose,
-    }
+    })
   }
 
   pub fn command_clone(&self, url: &str, dotdir: Option<&str>) -> i32 {
@@ -95,3 +97,17 @@ fn check_symlink_privilege() {
 #[cfg(not(windows))]
 #[inline]
 pub fn check_symlink_privilege() {}
+
+
+fn init_envs() -> Result<String, String> {
+  if env::var("HOME").is_err() {
+    env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
+  }
+
+  let dotdir = env::var("DOT_DIR").or(util::expand_full("$HOME/.dotfiles"))
+    .map_err(|_| "failed to determine dotdir".to_string())?;
+  env::set_var("DOT_DIR", dotdir.as_str());
+  env::set_var("dotdir", dotdir.as_str());
+
+  Ok(dotdir)
+}

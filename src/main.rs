@@ -1,22 +1,22 @@
 extern crate dot;
 extern crate clap;
 
-use clap::{Arg, App, AppSettings, SubCommand};
-use dot::app;
+use clap::{Arg, AppSettings, SubCommand};
+use dot::App;
 
 pub fn main() {
-  let retcode = _main();
-  std::process::exit(retcode);
+  match run() {
+    Ok(retcode) => std::process::exit(retcode),
+    Err(err) => panic!("unknown error: {}", err),
+  }
 }
 
-pub fn _main() -> i32 {
+pub fn run() -> Result<i32, String> {
   let matches = cli().get_matches();
+  let dry_run = matches.is_present("dry-run");
+  let verbose = matches.is_present("verbose");
 
-  let dotdir = dot::init_envs();
-  let app = app::App::new(&dotdir,
-                          matches.is_present("dry-run"),
-                          matches.is_present("verbose"));
-
+  let app = App::new(dry_run, verbose)?;
 
   let retcode = match matches.subcommand() {
     ("check", _) => app.command_check(),
@@ -35,7 +35,7 @@ pub fn _main() -> i32 {
       let dotdir = args.value_of("dotdir");
       let ret = app.command_clone(url, dotdir);
       if ret != 0 {
-        return ret;
+        return Ok(ret);
       }
       app.command_link()
     }
@@ -57,11 +57,11 @@ pub fn _main() -> i32 {
     std::io::stdin().read_line(&mut s).ok().expect("failed to read a line.");
   }
 
-  retcode
+  Ok(retcode)
 }
 
-fn cli() -> App<'static, 'static> {
-  App::new(env!("CARGO_PKG_NAME"))
+fn cli() -> clap::App<'static, 'static> {
+  clap::App::new(env!("CARGO_PKG_NAME"))
     .about(env!("CARGO_PKG_DESCRIPTION"))
     .version(env!("CARGO_PKG_VERSION"))
     .author(env!("CARGO_PKG_AUTHORS"))
