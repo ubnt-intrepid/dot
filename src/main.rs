@@ -1,29 +1,12 @@
-extern crate ansi_term;
+extern crate dot;
 extern crate clap;
-extern crate shellexpand;
-extern crate toml;
-
-#[cfg(windows)]
-extern crate winapi;
-#[cfg(windows)]
-extern crate advapi32;
-#[cfg(windows)]
-extern crate kernel32;
-#[cfg(windows)]
-extern crate runas;
-
-mod app;
-mod dotfiles;
-mod entry;
-mod util;
-#[cfg(windows)]
-mod windows;
 
 use std::env;
 use std::fs;
 use std::path::Path;
 use clap::{Arg, App, AppSettings, SubCommand};
-
+use dot::util::expand_full;
+use dot::app;
 
 pub fn main() {
   let retcode = _main();
@@ -35,7 +18,7 @@ pub fn _main() -> i32 {
     env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
   }
 
-  let dotdir = env::var("DOT_DIR").unwrap_or(util::expand_full("$HOME/.dotfiles").unwrap());
+  let dotdir = env::var("DOT_DIR").or(expand_full("$HOME/.dotfiles")).unwrap();
   env::set_var("DOT_DIR", dotdir.as_str());
   env::set_var("dotdir", dotdir.as_str());
 
@@ -90,7 +73,7 @@ pub fn _main() -> i32 {
 
     ("install", _) => {
       // Bash completion
-      let target_dir = util::expand_full("~/.local/share/bash_completion/completions").unwrap();
+      let target_dir = expand_full("~/.local/share/bash_completion/completions").unwrap();
       let target_dir = Path::new(&target_dir);
       fs::create_dir_all(&target_dir).unwrap();
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
@@ -102,7 +85,7 @@ pub fn _main() -> i32 {
                                  .unwrap());
 
       // Zsh completion
-      let target_dir = util::expand_full("~/.local/share/zsh/site-functions").unwrap();
+      let target_dir = expand_full("~/.local/share/zsh/site-functions").unwrap();
       let target_dir = Path::new(&target_dir);
       fs::create_dir_all(&target_dir).unwrap();
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
@@ -114,7 +97,7 @@ pub fn _main() -> i32 {
                                  .unwrap());
 
       // Fish completion
-      let target_dir = util::expand_full("~/.config/fish/completions").unwrap();
+      let target_dir = expand_full("~/.config/fish/completions").unwrap();
       let target_dir = Path::new(&target_dir);
       fs::create_dir_all(&target_dir).unwrap();
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
