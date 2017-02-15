@@ -10,27 +10,25 @@ This project is based on [ssh0](https://github.com/ssh0)'s [dot](https://github.
 inspired by [rhysd](https://github.com/rhysd)'s [dotfiles](https://github.com/rhysd/dotfiles).
 
 ## Usage
-Firstly, you must clone your own dotfiles repository by using `git` command.
-And then, use `dot link` to create symbolic links.
-
 ```shell-session
-$ git clone https://github.com/example/dotfiles.git
-$ dot link
+$ dot init https://github.com/example/dotfiles.git
 ```
 By default, the location of dotfiles repository is `$HOME/.dotfiles`.
 The location can be specified by using environment variable `$DOT_DIR`.
 
 ## Commands
-* `link [-v | --verbose] [-n | --dry-run]`  
+* `dot link`  
   Create all of managed links into your home directory.
-* `clean [-v | --verbose] [-n | --dry-run]`  
+* `dot clean`  
   Remove all of managed links from your home directory.
-* `check [-v | --verbose]`  
+* `dot check`  
   Check if all of links are correctly existed.
-* `root`  
+* `dot root`  
   Show the root directory of dotfiles repository.
-* `clone <url> [<dotdir>] [-n | --dry-run]`  
+* `dot clone <url>`  
   Clone your dotfiles repository from remote.
+* `dot init <url>`  
+  Perform `dot clone <url> && dot link`.
 
 If you want more information, type `dot help`.
 

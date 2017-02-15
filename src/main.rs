@@ -16,7 +16,7 @@ pub fn run() -> Result<i32, String> {
   let dry_run = matches.is_present("dry-run");
   let verbose = matches.is_present("verbose");
 
-  let app = App::new(dry_run, verbose)?;
+  let mut app = App::new(dry_run, verbose)?;
 
   let retcode = match matches.subcommand() {
     ("check", _) => app.command_check(),
@@ -26,14 +26,12 @@ pub fn run() -> Result<i32, String> {
 
     ("clone", Some(args)) => {
       let url = args.value_of("url").unwrap();
-      let dotdir = args.value_of("dotdir");
-      app.command_clone(url, dotdir)
+      app.command_clone(url)
     }
 
     ("init", Some(args)) => {
       let url = args.value_of("url").unwrap();
-      let dotdir = args.value_of("dotdir");
-      let ret = app.command_clone(url, dotdir);
+      let ret = app.command_clone(url);
       if ret != 0 {
         return Ok(ret);
       }
@@ -91,18 +89,12 @@ fn cli() -> clap::App<'static, 'static> {
       .arg(Arg::with_name("url")
         .help("URL of remote repository")
         .required(true)
-        .takes_value(true))
-      .arg(Arg::with_name("dotdir")
-        .help("Path of cloned repository (default: '$DOT_DIR')")
         .takes_value(true)))
     .subcommand(SubCommand::with_name("init")
       .about("Clone dotfiles repository from remote & make links")
       .arg(Arg::with_name("url")
         .help("URL of remote repository")
         .required(true)
-        .takes_value(true))
-      .arg(Arg::with_name("dotdir")
-        .help("Path of cloned repository (default: '$DOT_DIR')")
         .takes_value(true)))
     .subcommand(SubCommand::with_name("completion")
       .about("Generate completion scripts")

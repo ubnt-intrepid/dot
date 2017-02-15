@@ -26,8 +26,8 @@ impl App {
     })
   }
 
-  pub fn command_clone(&self, url: &str, dotdir: Option<&str>) -> i32 {
-    let dotdir = dotdir.unwrap_or(self.dotfiles.root_dir().to_str().unwrap());
+  pub fn command_clone(&self, url: &str) -> i32 {
+    let dotdir = self.dotfiles.root_dir().to_str().expect("failed to resolve dotdir");
     util::wait_exec("git", &["clone", url, dotdir], None, self.dry_run).unwrap()
   }
 
@@ -36,7 +36,9 @@ impl App {
     0
   }
 
-  pub fn command_check(&self) -> i32 {
+  pub fn command_check(&mut self) -> i32 {
+    self.dotfiles.read_entries();
+
     let mut num_unhealth = 0;
     for entry in self.dotfiles.entries() {
       if entry.check(self.verbose).unwrap() == false {
@@ -46,7 +48,9 @@ impl App {
     num_unhealth
   }
 
-  pub fn command_link(&self) -> i32 {
+  pub fn command_link(&mut self) -> i32 {
+    self.dotfiles.read_entries();
+
     if !self.dry_run {
       check_symlink_privilege();
     }
@@ -57,7 +61,9 @@ impl App {
     0
   }
 
-  pub fn command_clean(&self) -> i32 {
+  pub fn command_clean(&mut self) -> i32 {
+    self.dotfiles.read_entries();
+
     for entry in self.dotfiles.entries() {
       entry.unlink(self.dry_run, self.verbose).unwrap();
     }

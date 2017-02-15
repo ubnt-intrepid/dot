@@ -11,12 +11,14 @@ pub struct Dotfiles {
 
 impl Dotfiles {
   pub fn new(root_dir: PathBuf) -> Dotfiles {
-    let entries = read_entries(root_dir.as_path());
-
     Dotfiles {
       _root_dir: root_dir,
-      _entries: entries,
+      _entries: Vec::new(),
     }
+  }
+
+  pub fn read_entries(&mut self) {
+    self._entries = read_entries(self._root_dir.as_path());
   }
 
   pub fn root_dir(&self) -> &Path {
