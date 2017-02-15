@@ -4,8 +4,6 @@ use dotfiles::Dotfiles;
 use util;
 
 #[cfg(windows)]
-use runas;
-#[cfg(windows)]
 use windows;
 
 
@@ -86,15 +84,7 @@ fn check_symlink_privilege() {
       }
     }
     ElevationType::Limited => {
-      let mut args = vec!["--wait-prompt".to_owned()];
-      args.extend(env::args().skip(1));
-      let status = runas::Command::new(env::current_exe().unwrap())
-        .args(args.as_slice())
-        .show(true)
-        .status()
-        .unwrap();
-      process::exit(status.code().unwrap());
-      // panic!("should be elevate as an Administrator.");
+      panic!("should be elevate as an Administrator.");
     }
     ElevationType::Full => (),
   }

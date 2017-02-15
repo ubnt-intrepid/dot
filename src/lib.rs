@@ -8,8 +8,6 @@ extern crate winapi;
 extern crate advapi32;
 #[cfg(windows)]
 extern crate kernel32;
-#[cfg(windows)]
-extern crate runas;
 
 pub mod app;
 mod dotfiles;

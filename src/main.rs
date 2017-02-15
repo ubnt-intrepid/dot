@@ -18,15 +18,15 @@ pub fn run() -> Result<i32, String> {
 
   let mut app = App::new(dry_run, verbose)?;
 
-  let retcode = match matches.subcommand() {
-    ("check", _) => app.command_check(),
-    ("link", _) => app.command_link(),
-    ("clean", _) => app.command_clean(),
-    ("root", _) => app.command_root(),
+  match matches.subcommand() {
+    ("check", _) => Ok(app.command_check()),
+    ("link", _) => Ok(app.command_link()),
+    ("clean", _) => Ok(app.command_clean()),
+    ("root", _) => Ok(app.command_root()),
 
     ("clone", Some(args)) => {
       let url = args.value_of("url").unwrap();
-      app.command_clone(url)
+      Ok(app.command_clone(url))
     }
 
     ("init", Some(args)) => {
@@ -35,7 +35,7 @@ pub fn run() -> Result<i32, String> {
       if ret != 0 {
         return Ok(ret);
       }
-      app.command_link()
+      Ok(app.command_link())
     }
 
     ("completion", Some(args)) => {
@@ -43,19 +43,11 @@ pub fn run() -> Result<i32, String> {
       cli().gen_completions_to(env!("CARGO_PKG_NAME"),
                                shell.parse::<clap::Shell>().unwrap(),
                                &mut std::io::stdout());
-      0
+      Ok(0)
     }
 
     (_, _) => unreachable!(),
-  };
-
-  if matches.is_present("wait-prompt") {
-    println!("press enter to exit...");
-    let mut s = String::new();
-    std::io::stdin().read_line(&mut s).ok().expect("failed to read a line.");
   }
-
-  Ok(retcode)
 }
 
 fn cli() -> clap::App<'static, 'static> {
@@ -65,9 +57,6 @@ fn cli() -> clap::App<'static, 'static> {
     .author(env!("CARGO_PKG_AUTHORS"))
     .setting(AppSettings::VersionlessSubcommands)
     .setting(AppSettings::SubcommandRequiredElseHelp)
-    .arg(Arg::with_name("wait-prompt")
-      .long("wait-prompt")
-      .hidden(true))
     .arg(Arg::with_name("verbose")
       .help("Use verbose output")
       .long("verbose")
