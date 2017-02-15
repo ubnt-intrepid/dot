@@ -4,6 +4,8 @@ use std::path::Path;
 use dotfiles::Dotfiles;
 use util;
 use errors::Result;
+use url::Url;
+use regex::Regex;
 
 #[cfg(windows)]
 use windows;
@@ -26,9 +28,14 @@ impl App {
     })
   }
 
-  pub fn command_clone(&self, url: &str) -> Result<i32> {
+  pub fn command_clone(&self, query: &str) -> Result<i32> {
+    let url = resolve_url(query)?;
     let dotdir = self.dotfiles.root_dir().to_string_lossy();
-    util::wait_exec("git", &["clone", url, dotdir.borrow()], None, self.dry_run).map_err(Into::into)
+    util::wait_exec("git",
+                    &["clone", url.as_str(), dotdir.borrow()],
+                    None,
+                    self.dry_run)
+      .map_err(Into::into)
   }
 
   pub fn command_root(&self) -> Result<i32> {
@@ -110,4 +117,34 @@ fn init_envs() -> Result<String> {
   env::set_var("dotdir", dotdir.as_str());
 
   Ok(dotdir)
+}
+
+fn resolve_url(s: &str) -> Result<Url> {
+  let re_scheme = Regex::new(r"^([^:]+)://").unwrap();
+  let re_scplike = Regex::new(r"^((?:[^@]+@)?)([^:]+):/?(.+)$").unwrap();
+
+  if let Some(cap) = re_scheme.captures(s) {
+    match cap.get(1).unwrap().as_str() {
+      "http" | "https" | "ssh" | "git" => Url::parse(s).map_err(Into::into),
+      scheme => Err(format!("'{}' is invalid scheme", scheme).into()),
+    }
+
+  } else if let Some(cap) = re_scplike.captures(s) {
+    let username = cap.get(1)
+      .and_then(|s| if s.as_str() != "" {
+        Some(s.as_str())
+      } else {
+        None
+      })
+      .unwrap_or("git@");
+    let host = cap.get(2).unwrap().as_str();
+    let path = cap.get(3).unwrap().as_str();
+
+    Url::parse(&format!("ssh://{}{}/{}.git", username, host, path)).map_err(Into::into)
+
+  } else {
+    let username = s.splitn(2, "/").next().ok_or("'username' is unknown".to_owned())?;
+    let reponame = s.splitn(2, "/").skip(1).next().unwrap_or("dotfiles");
+    Url::parse(&format!("https://github.com/{}/{}.git", username, reponame)).map_err(Into::into)
+  }
 }

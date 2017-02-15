@@ -11,10 +11,22 @@ inspired by [rhysd](https://github.com/rhysd)'s [dotfiles](https://github.com/rh
 
 ## Usage
 ```shell-session
-$ dot init https://github.com/example/dotfiles.git
+$ dot init [pattern]
 ```
 By default, the location of dotfiles repository is `$HOME/.dotfiles`.
 The location can be specified by using environment variable `$DOT_DIR`.
+
+`[pattern]` is set the string to determine remote repository's URL of dotfiles.
+Available patterns are as follows:
+
+* `(http|https|ssh|git)://[username@]github.com[:port]/path-to-repo.git`  
+  URL of dotfiles repository
+* `git@github.com:path-to-repo.git`  
+  SCP-like path
+* `username/dotfiles`  
+  GitHub user and the name of repository
+* `username`
+  Only GitHub user (the name of repository is assumed to be `dotfiles`)
 
 ## Commands
 * `dot link`  

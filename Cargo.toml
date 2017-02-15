@@ -12,7 +12,8 @@ clap = "^2.16.2"
 toml = "^0.2.1"
 shellexpand = "0.1.0"
 ansi_term = "^0.9.0"
-#regex = "^0.1.77"
+regex = "*"
+url = "*"
 error-chain = "*"
 
 [target.'cfg(windows)'.dependencies]
