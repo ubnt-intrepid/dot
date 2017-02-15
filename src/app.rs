@@ -1,7 +1,9 @@
+use std::borrow::Borrow;
 use std::env;
 use std::path::Path;
 use dotfiles::Dotfiles;
 use util;
+use errors::Result;
 
 #[cfg(windows)]
 use windows;
@@ -14,7 +16,7 @@ pub struct App {
 }
 
 impl App {
-  pub fn new(dry_run: bool, verbose: bool) -> Result<App, String> {
+  pub fn new(dry_run: bool, verbose: bool) -> Result<App> {
     let dotdir = init_envs()?;
     let dotfiles = Dotfiles::new(Path::new(&dotdir).to_path_buf());
     Ok(App {
@@ -24,17 +26,17 @@ impl App {
     })
   }
 
-  pub fn command_clone(&self, url: &str) -> i32 {
-    let dotdir = self.dotfiles.root_dir().to_str().expect("failed to resolve dotdir");
-    util::wait_exec("git", &["clone", url, dotdir], None, self.dry_run).unwrap()
+  pub fn command_clone(&self, url: &str) -> Result<i32> {
+    let dotdir = self.dotfiles.root_dir().to_string_lossy();
+    util::wait_exec("git", &["clone", url, dotdir.borrow()], None, self.dry_run).map_err(Into::into)
   }
 
-  pub fn command_root(&self) -> i32 {
+  pub fn command_root(&self) -> Result<i32> {
     println!("{}", self.dotfiles.root_dir().display());
-    0
+    Ok(0)
   }
 
-  pub fn command_check(&mut self) -> i32 {
+  pub fn command_check(&mut self) -> Result<i32> {
     self.dotfiles.read_entries();
 
     let mut num_unhealth = 0;
@@ -43,10 +45,10 @@ impl App {
         num_unhealth += 1;
       }
     }
-    num_unhealth
+    Ok(num_unhealth)
   }
 
-  pub fn command_link(&mut self) -> i32 {
+  pub fn command_link(&mut self) -> Result<i32> {
     self.dotfiles.read_entries();
 
     if !self.dry_run {
@@ -56,16 +58,18 @@ impl App {
     for entry in self.dotfiles.entries() {
       entry.mklink(self.dry_run, self.verbose).unwrap();
     }
-    0
+
+    Ok(0)
   }
 
-  pub fn command_clean(&mut self) -> i32 {
+  pub fn command_clean(&mut self) -> Result<i32> {
     self.dotfiles.read_entries();
 
     for entry in self.dotfiles.entries() {
       entry.unlink(self.dry_run, self.verbose).unwrap();
     }
-    0
+
+    Ok(0)
   }
 }
 
@@ -95,7 +99,7 @@ fn check_symlink_privilege() {
 pub fn check_symlink_privilege() {}
 
 
-fn init_envs() -> Result<String, String> {
+fn init_envs() -> Result<String> {
   if env::var("HOME").is_err() {
     env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
   }

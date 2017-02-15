@@ -11,7 +11,7 @@ pub fn main() {
   }
 }
 
-pub fn run() -> Result<i32, String> {
+pub fn run() -> dot::Result<i32> {
   let matches = cli().get_matches();
   let dry_run = matches.is_present("dry-run");
   let verbose = matches.is_present("verbose");
@@ -19,23 +19,23 @@ pub fn run() -> Result<i32, String> {
   let mut app = App::new(dry_run, verbose)?;
 
   match matches.subcommand() {
-    ("check", _) => Ok(app.command_check()),
-    ("link", _) => Ok(app.command_link()),
-    ("clean", _) => Ok(app.command_clean()),
-    ("root", _) => Ok(app.command_root()),
+    ("check", _) => app.command_check(),
+    ("link", _) => app.command_link(),
+    ("clean", _) => app.command_clean(),
+    ("root", _) => app.command_root(),
 
     ("clone", Some(args)) => {
       let url = args.value_of("url").unwrap();
-      Ok(app.command_clone(url))
+      app.command_clone(url)
     }
 
     ("init", Some(args)) => {
       let url = args.value_of("url").unwrap();
-      let ret = app.command_clone(url);
+      let ret = app.command_clone(url)?;
       if ret != 0 {
         return Ok(ret);
       }
-      Ok(app.command_link())
+      app.command_link()
     }
 
     ("completion", Some(args)) => {
