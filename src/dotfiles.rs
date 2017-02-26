@@ -40,7 +40,10 @@ fn read_entries(root_dir: &Path) -> Vec<Entry> {
   buf
 }
 
-fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::Table, root_dir: &Path, key: &str) {
+fn read_entries_from_key(buf: &mut Vec<Entry>,
+                         entries: &toml::value::Table,
+                         root_dir: &Path,
+                         key: &str) {
   for (ref key, ref val) in entries.get(key).unwrap().as_table().unwrap().iter() {
     if let Some(val) = val.as_str() {
       let src = util::expand_full(&format!("{}/{}", root_dir.display(), key)).unwrap();

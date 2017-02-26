@@ -94,16 +94,17 @@ pub fn remove_link<P: AsRef<Path>>(dst: P, dry_run: bool) -> Result<(), io::Erro
 }
 
 
-pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::Table, io::Error> {
+pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::value::Table, io::Error> {
   let mut file = try!(File::open(path));
 
   let mut buf = Vec::new();
   try!(file.read_to_end(&mut buf));
 
   let content = String::from_utf8_lossy(&buf[..]).into_owned();
-  toml::Parser::new(&content).parse().ok_or(io::Error::new(io::ErrorKind::Other,
-                                                           "failed to parse configuration file \
-                                                            as TOML"))
+  toml::de::from_str(&content).map_err(|_| {
+    io::Error::new(io::ErrorKind::Other,
+                   "failed to parse configuration file as TOML")
+  })
 }
 
 

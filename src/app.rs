@@ -83,8 +83,6 @@ impl App {
 
 #[cfg(windows)]
 fn check_symlink_privilege() {
-  use std::env;
-  use std::process;
   use windows::ElevationType;
 
   match windows::get_elevation_type().unwrap() {
