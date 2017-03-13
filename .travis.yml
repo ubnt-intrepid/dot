@@ -1,39 +1,101 @@
-language: generic
-sudo: false
+dist: trusty
+language: rust
+sudo: required
+services: docker
 
-os:
-  - linux
-  - osx
+branches:
+  only:
+    - master
 
 env:
-  - PKGNAME=dot ARCH=x86_64
-  - PKGNAME=dot ARCH=i686
+  global:
+    - CRATE_NAME=dot
+    # TODO: embed encrypted API key to access crates.io
+    # - CRATES_IO_API_KEY=...
 
-before_install:
-  - if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "x86_64" ]]; then export HOST=x86_64-unknown-linux-musl; fi
-  - if [[ $TRAVIS_OS_NAME == "linux" && $ARCH == "i686"   ]]; then export HOST=i686-unknown-linux-musl; fi
-  - if [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "x86_64" ]]; then export HOST=x86_64-apple-darwin; fi
-  - if [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "i686"   ]]; then export HOST=i686-apple-darwin; fi
+matrix:
+  include:
+    # Linux (glibc)
+    # - env: TARGET=i686-unknown-linux-gnu
+    #   rust: stable
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: stable
+
+    # Linux (musl libc)
+    - env: TARGET=x86_64-unknown-linux-musl
+      rust: stable
+
+    # Linux (AArch64)
+    - env: TARGET=aarch64-unknown-linux-gnu SKIP_TEST=1
+      rust: stable
+
+    # macOS
+    # - env: TARGET=i686-apple-darwin
+    #   rust: stable
+    #   os: osx
+    - env: TARGET=x86_64-apple-darwin
+      rust: stable
+      os: osx
+
+    # FreeBSD
+    # - env: TARGET=i686-unknown-freebsd SKIP_TEST=1
+    #   rust: stable
+    - env: TARGET=x86_64-unknown-freebsd SKIP_TEST=1
+      rust: stable
+
+    # Android
+    # - env: TARGET=i686-linux-android ARCH=x86 API=23 SKIP_TEST=1
+    #   rust: stable
+    - env: TARGET=arm-linux-androideabi ARCH=arm API=24 SKIP_TEST=1
+      rust: stable
+
+    # beta/nightly channel
+    # - env: TARGET=x86_64-unknown-linux-gnu
+    #   rust: beta
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+
+  allow_failures:
+    - rust: beta
+    - rust: nightly
 
 install:
-  - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
-  - export PATH=~/.cargo/bin:$PATH
-  - if ! [[ $TRAVIS_OS_NAME == "osx"   && $ARCH == "x86_64" ]]; then rustup target add ${HOST}; fi
+  - sh $HOME/rust/lib/rustlib/uninstall.sh
+  - ./ci/install.sh "$TARGET" "$TRAVIS_RUST_VERSION"
+  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then source $HOME/.cargo/env; fi
 
 script:
-  - cargo build --release --target=${HOST}
-  - cargo test  --release --target=${HOST}
-  - bash ./ci/make_package.sh
+  - ./ci/build.sh "$SKIP_TEST"
+
+before_deploy:
+  - export PKGNAME="${CRATE_NAME}-${TRAVIS_TAG}-${TARGET}"
+  - ./ci/deploy.sh "$PKGNAME"
 
 deploy:
-  provider: releases
-  api_key:
-    secure: "H++t8gTlcNKJMYZ+0GVcmCU4aaVqjmlkZMZ1uan74utL+1qp1K4ufL8tN2+1gO3z0r2cMpL6edzB+QMieupK5kKtroKwun8PFuwGO9CSj67ZM/XHxl/C/GMgtQtab1vwScQxcAJ4TLc8EXDTkAPFhnXMPgoNB+jStyTb5E92fozmTbTSrxIXB2WhTbnp4Lt4PtqvtVYBAL67q7s9ualoWXZnBoeyko9CQtUAfIV8tgrySwnA6BbzEZ/grFP/xUw3Ia7Am0oO+6TNbGkONxte8HoqtlagLGNr5ytfBUNpRa1O5YC6o7tpOrbWIhAY3Zr3sUyhe+gc8cwU09y5UDC4uHjezbMuwlk7C1Czwm9lCYW1p+SGVUGZpC3COChFpHJkKPhIIKCuizNPGyZWjk0ZlerwYOuTCsnaY5MnajMs4WqOs8aT/dLCwoXG9G7fKjxRcnDfXMEZcf24H+73Y6/IrkuYY0jlWa+lbh5sIayb4PcIB5IwZhgIjF1LQE/4P3T0UX7rdK0nEajrmcGFiygCarZP4FAuDD9lrmanqRYTtNh92FOl4m2Sbqh213btzIC0TCzwWod7gWydze3d3cTUjOXjJUFYkAzZAVluB8pf5nTl81Nd4PztYyVDhXei+HEAiwrwucShvtEWrySXG3IapN20/PoM1CAXqyzR0IABEOQ="
-  file: "${PKGNAME}-${HOST}.tar.gz"
-  file_glob: true
-  overwrite: true
-  skip_cleanup: true
-  on:
-    repo: ubnt-intrepid/dot.rs
-    all_branches: true
-    tags: true
+  - provider: releases
+    api_key:
+      secure: "H++t8gTlcNKJMYZ+0GVcmCU4aaVqjmlkZMZ1uan74utL+1qp1K4ufL8tN2+1gO3z0r2cMpL6edzB+QMieupK5kKtroKwun8PFuwGO9CSj67ZM/XHxl/C/GMgtQtab1vwScQxcAJ4TLc8EXDTkAPFhnXMPgoNB+jStyTb5E92fozmTbTSrxIXB2WhTbnp4Lt4PtqvtVYBAL67q7s9ualoWXZnBoeyko9CQtUAfIV8tgrySwnA6BbzEZ/grFP/xUw3Ia7Am0oO+6TNbGkONxte8HoqtlagLGNr5ytfBUNpRa1O5YC6o7tpOrbWIhAY3Zr3sUyhe+gc8cwU09y5UDC4uHjezbMuwlk7C1Czwm9lCYW1p+SGVUGZpC3COChFpHJkKPhIIKCuizNPGyZWjk0ZlerwYOuTCsnaY5MnajMs4WqOs8aT/dLCwoXG9G7fKjxRcnDfXMEZcf24H+73Y6/IrkuYY0jlWa+lbh5sIayb4PcIB5IwZhgIjF1LQE/4P3T0UX7rdK0nEajrmcGFiygCarZP4FAuDD9lrmanqRYTtNh92FOl4m2Sbqh213btzIC0TCzwWod7gWydze3d3cTUjOXjJUFYkAzZAVluB8pf5nTl81Nd4PztYyVDhXei+HEAiwrwucShvtEWrySXG3IapN20/PoM1CAXqyzR0IABEOQ="
+    file_glob: true
+    file: "${PKGNAME}.tar.gz"
+    overwrite: true
+    skip_cleanup: true
+    on:
+      repo: ubnt-intrepid/dot
+      tags: true
+      condition: $TRAVIS_RUST_VERSION = stable
+
+  - provider: script
+    script: ./ci/publish.sh "$CRATES_IO_API_KEY"
+    on:
+      tags: true
+      condition: $TRAVIS_RUST_VERSION = stable
+      condition: $TARGET = x86_64-unknown-linux-gnu
+
+notifications:
+  email:
+    on_success: never
+    on_failure: change
+
+cache: cargo
+before_cache:
+  - chmod -R a+r $HOME/.cargo

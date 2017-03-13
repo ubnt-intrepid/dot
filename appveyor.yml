@@ -1,34 +1,53 @@
-version: 0.1.0.{build}
+version: 0.0.{build}
 
 branches:
   only:
-  - master
+    - master
 
 environment:
   global:
-    PKGNAME: dot 
+    CRATE_NAME: wan
     TOOLCHAIN: stable
   matrix:
-    - HOST: i686-pc-windows-msvc
-    - HOST: x86_64-pc-windows-msvc
+    # - TARGET: i686-pc-windows-msvc
+    - TARGET: x86_64-pc-windows-msvc
+    # - TARGET: i686-pc-windows-gnu
+    - TARGET: x86_64-pc-windows-gnu
 
 install:
-  - ps: Start-FileDownload 'https://static.rust-lang.org/rustup/dist/i686-pc-windows-msvc/rustup-init.exe'
-  - rustup-init.exe --no-modify-path --default-toolchain=%TOOLCHAIN% --default-host=%HOST% -y --verbose
-  - SET PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - ps: >-
+      switch ($env:TARGET)
+      {
+        'x86_64-pc-windows-gnu' {
+          $env:MSYSTEM = "MINGW64"
+          $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:PATH
+        }
+        'i686-pc-windows-gnu' {
+          $env:MSYSTEM = "MINGW32"
+          $env:PATH = "C:\msys64\mingw32\bin;C:\msys64\usr\bin;" + $env:PATH
+        }
+      }
+  - curl -sSf -o rustup-init.exe https://win.rustup.rs/
+  - rustup-init.exe -y --no-modify-path --default-toolchain=%TOOLCHAIN% --default-host=%TARGET%
+  - set PATH=%USERPROFILE%\.cargo\bin;%PATH%
   - rustc -V
   - cargo -V
 
 build_script:
-  - .\ci\make_package.bat
+  - cargo build
 
 test_script:
-  - cargo test --release --target=%HOST%
+  - cargo test
+
+after_test:
+  - ps: $env:PKGNAME = "$($env:CRATE_NAME)-$(./ci/get-tagorbranch.ps1)-$($env:TARGET)"
+  - ps: .\ci\deploy.ps1 -pkgname $env:PKGNAME
 
 artifacts:
-  - path: $(PKGNAME)-$(HOST)
+  - path: $(PKGNAME)
 
 deploy:
+  appveyor_repo_tag: true
   provider: GitHub
   draft: false
   prerelease: false
@@ -38,3 +57,8 @@ deploy:
   on:
     branch: master
     appveyor_repo_tag: true
+
+cache:
+  - C:\Users\appveyor\.cargo
+  - C:\Users\appveyor\.rustup
+  - target
