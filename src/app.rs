@@ -123,7 +123,7 @@ fn resolve_url(s: &str) -> Result<Url> {
 
   if let Some(cap) = re_scheme.captures(s) {
     match cap.get(1).unwrap().as_str() {
-      "http" | "https" | "ssh" | "git" => Url::parse(s).map_err(Into::into),
+      "http" | "https" | "ssh" | "git" | "file" => Url::parse(s).map_err(Into::into),
       scheme => Err(format!("'{}' is invalid scheme", scheme).into()),
     }
 

@@ -1,6 +1,6 @@
 [package]
 name = "dot"
-version = "0.1.3"
+version = "0.1.3-dev"
 authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
 description = "Alternative of dotfile management frameworks"
 
