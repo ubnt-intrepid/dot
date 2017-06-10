@@ -12,7 +12,7 @@ Precompiled binaries are located at [GitHub releases page](https://github.com/ub
 If you want to use development version, try `cargo install` to build from source, as follows:
 
 ```shell-session
-$ cargo install --git clone https://github.com/ubnt-intrepid/dot.rs.git
+$ cargo install --git https://github.com/ubnt-intrepid/dot.rs.git
 ```
 
 ## Example Usage
