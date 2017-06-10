@@ -68,7 +68,7 @@ Mappings at the section `[general]` are avaialble at any environment.
 On the other hand, items at the other section (`[windows]`, `[linux]`) only apply specified platform.
 The value of environment variables in each items are extracted.
 
-See also [my dotfiles](https://github.com/ubnt-intrepid/.dotfiles) for details.
+See also [my dotfiles](https://github.com/ubnt-intrepid/dotfiles) for details.
 
 ## License
 `dot` is distributed under the MIT license.
