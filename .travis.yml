@@ -60,7 +60,6 @@ matrix:
     - rust: nightly
 
 install:
-  - sh $HOME/rust/lib/rustlib/uninstall.sh
   - ./ci/install.sh "$TARGET" "$TRAVIS_RUST_VERSION"
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then source $HOME/.cargo/env; fi
 
