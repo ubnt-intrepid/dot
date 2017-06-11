@@ -120,6 +120,8 @@ pub static OS_NAME: &'static str = "linux";
 #[cfg(target_os = "android")]
 pub static OS_NAME: &'static str = "linux";
 
+#[cfg(target_os = "freebsd")]
+pub static OS_NAME: &'static str = "freebsd";
 
 // create an instance of PathBuf from string.
 pub fn make_pathbuf(path: &str) -> PathBuf {
