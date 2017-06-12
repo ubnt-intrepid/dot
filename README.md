@@ -1,5 +1,5 @@
 # `dot`
-[![Build Status](https://travis-ci.org/ubnt-intrepid/dot.rs.svg?branch=master)](https://travis-ci.org/ubnt-intrepid/dot)
+[![Build Status](https://travis-ci.org/ubnt-intrepid/dot.svg?branch=master)](https://travis-ci.org/ubnt-intrepid/dot)
 [![Build status](https://ci.appveyor.com/api/projects/status/mleixxiv2p6saqpw/branch/master?svg=true)](https://ci.appveyor.com/project/ubnt-intrepid/dot/branch/master)
 
 `dot` is a command-line tool for management dotfiles, written in Rust.
@@ -12,7 +12,7 @@ Precompiled binaries are located at [GitHub releases page](https://github.com/ub
 If you want to use development version, try `cargo install` to build from source, as follows:
 
 ```shell-session
-$ cargo install --git https://github.com/ubnt-intrepid/dot.rs.git
+$ cargo install --git https://github.com/ubnt-intrepid/dot.git
 ```
 
 ## Example Usage
