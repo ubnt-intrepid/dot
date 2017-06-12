@@ -44,16 +44,18 @@ fn read_entries_from_key(buf: &mut Vec<Entry>,
                          entries: &toml::value::Table,
                          root_dir: &Path,
                          key: &str) {
-  for (ref key, ref val) in entries.get(key).unwrap().as_table().unwrap().iter() {
-    if let Some(val) = val.as_str() {
-      let src = util::expand_full(&format!("{}/{}", root_dir.display(), key)).unwrap();
+  if let Some(entries_table) = entries.get(key).and_then(|value| value.as_table()) {
+    for (ref key, ref val) in entries_table.iter() {
+      if let Some(val) = val.as_str() {
+        let src = util::expand_full(&format!("{}/{}", root_dir.display(), key)).unwrap();
 
-      let mut dst = util::expand_full(val).unwrap();
-      if Path::new(&dst).is_relative() {
-        dst = util::expand_full(&format!("$HOME/{}", val)).unwrap();
+        let mut dst = util::expand_full(val).unwrap();
+        if Path::new(&dst).is_relative() {
+          dst = util::expand_full(&format!("$HOME/{}", val)).unwrap();
+        }
+
+        buf.push(Entry::new(&src, &dst));
       }
-
-      buf.push(Entry::new(&src, &dst));
     }
   }
 }
