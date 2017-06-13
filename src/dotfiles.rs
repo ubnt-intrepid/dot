@@ -56,3 +56,28 @@ fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::value::Table, roo
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{Dotfiles, read_entries_from_key};
+    use std::path::Path;
+    use util;
+
+    #[test]
+    fn smoke_test() {
+        let root_dir = Path::new("tests/dotfiles").to_path_buf();
+        let mut dotfiles = Dotfiles::new(root_dir);
+        assert_eq!(Path::new("tests/dotfiles"), dotfiles.root_dir());
+        dotfiles.read_entries();
+    }
+
+    #[test]
+    fn do_nothing_if_given_key_is_not_exist() {
+        let root_dir = Path::new("tests/dotfiles").to_path_buf();
+        let entries = util::read_toml(root_dir.join(".mappings")).unwrap();
+
+        let mut buf = Vec::new();
+        read_entries_from_key(&mut buf, &entries, &root_dir, "hogehoge");
+        assert_eq!(buf.len(), 0);
+    }
+}
