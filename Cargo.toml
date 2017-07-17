@@ -12,6 +12,7 @@ regex = "0.2.1"
 shellexpand = "1.0.0"
 toml = "0.3.0"
 url = "1.4.0"
+unicode-bidi = "= 0.3.3" # for rust 1.16 compat
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.2.8"
