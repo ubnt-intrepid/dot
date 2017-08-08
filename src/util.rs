@@ -119,6 +119,9 @@ pub static OS_NAME: &'static str = "linux";
 #[cfg(target_os = "freebsd")]
 pub static OS_NAME: &'static str = "freebsd";
 
+#[cfg(target_os = "openbsd")]
+pub static OS_NAME: &'static str = "openbsd";
+
 // create an instance of PathBuf from string.
 pub fn make_pathbuf(path: &str) -> PathBuf {
     let path = path.replace("/", &format!("{}", MAIN_SEPARATOR));
