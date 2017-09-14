@@ -5,17 +5,16 @@ authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
 description = "Alternative of dotfile management frameworks"
 
 [dependencies]
-ansi_term = "0.9.0"
-clap = "2.20.5"
-error-chain = "0.10.0"
+ansi_term = "0.9"
+clap = "2.20"
+error-chain = "0.11"
 regex = "0.2.1"
-shellexpand = "1.0.0"
-toml = "0.3.0"
-url = "1.4.0"
-unicode-bidi = "= 0.3.3" # for rust 1.16 compat
+shellexpand = "1"
+toml = "0.4"
+url = "1.5"
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.2.8"
 advapi32-sys = "0.2.0"
 kernel32-sys = "0.2.2"
-runas = "*"
+runas = "0.1.1"
