@@ -1,6 +1,6 @@
 [package]
 name = "dot"
-version = "0.1.4"
+version = "0.1.5-dev"
 authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
 description = "Alternative of dotfile management frameworks"
 
@@ -12,6 +12,8 @@ regex = "0.2.1"
 shellexpand = "1"
 toml = "0.4"
 url = "1.5"
+structopt = "*"
+structopt-derive = "*"
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.2.8"

@@ -1,8 +1,44 @@
+extern crate structopt;
+#[macro_use]
+extern crate structopt_derive;
 extern crate dot;
 extern crate clap;
 
 use clap::{Arg, AppSettings, SubCommand};
 use dot::App;
+
+#[derive(StructOpt, Debug)]
+#[structopt(name = "dot")]
+struct Dot {
+    verbose: bool,
+    dry_run: bool,
+    #[structopt(subcommand)]
+    subcommand: Subcommands,
+}
+
+#[derive(StructOpt, Debug)]
+enum Subcommands {
+    #[structopt(name = "check")]
+    Check,
+
+    #[structopt(name = "link")]
+    Link,
+
+    #[structopt(name = "clean")]
+    Clean,
+
+    #[structopt(name = "root")]
+    Root,
+
+    #[structopt(name = "clone")]
+    Clone,
+
+    #[structopt(name = "init")]
+    Init,
+
+    #[structopt(name = "completion")]
+    Completion,
+}
 
 pub fn main() {
     match run() {
