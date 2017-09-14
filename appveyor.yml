@@ -1,64 +1,78 @@
 version: 0.0.{build}
 
-branches:
-  only:
-    - master
-
 environment:
   global:
-    CRATE_NAME: wan
-    TOOLCHAIN: stable
+  # TODO This is the Rust channel that build jobs will use by default but can be
+  # overridden on a case by case basis down below
+    RUST_VERSION: stable
+
+    # TODO Update this to match the name of your project.
+    CRATE_NAME: dot
+
+  # TODO These are all the build jobs. Adjust as necessary. Comment out what you
+  # don't need
   matrix:
-    # - TARGET: i686-pc-windows-msvc
-    - TARGET: x86_64-pc-windows-msvc
-    # - TARGET: i686-pc-windows-gnu
     - TARGET: x86_64-pc-windows-gnu
+    - TARGET: x86_64-pc-windows-msvc
 
 install:
   - ps: >-
-      switch ($env:TARGET)
-      {
-        'x86_64-pc-windows-gnu' {
-          $env:MSYSTEM = "MINGW64"
-          $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:PATH
-        }
-        'i686-pc-windows-gnu' {
-          $env:MSYSTEM = "MINGW32"
-          $env:PATH = "C:\msys64\mingw32\bin;C:\msys64\usr\bin;" + $env:PATH
-        }
+      If ($Env:TARGET -eq 'x86_64-pc-windows-gnu') {
+        $Env:PATH += ';C:\msys64\mingw64\bin'
+      } ElseIf ($Env:TARGET -eq 'i686-pc-windows-gnu') {
+        $Env:PATH += ';C:\msys64\mingw32\bin'
       }
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/
-  - rustup-init.exe -y --no-modify-path --default-toolchain=%TOOLCHAIN% --default-host=%TARGET%
-  - set PATH=%USERPROFILE%\.cargo\bin;%PATH%
-  - rustc -V
+  - rustup-init.exe -y --default-host %TARGET% --default-toolchain %RUST_VERSION%
+  - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
+  - rustc -Vv
   - cargo -V
 
-build_script:
-  - cargo build
-
+# TODO This is the "test phase", tweak it as you see fit
 test_script:
-  - cargo test
+  # we don't run the "test phase" when doing deploys
+  - if [%APPVEYOR_REPO_TAG%]==[false] (
+      cargo build --target %TARGET% --release &&
+      cargo test --target %TARGET% --release
+    )
 
-after_test:
-  - ps: $env:PKGNAME = "$($env:CRATE_NAME)-$(./ci/get-tagorbranch.ps1)-$($env:TARGET)"
-  - ps: .\ci\deploy.ps1 -pkgname $env:PKGNAME
-
-artifacts:
-  - path: $(PKGNAME)
+before_deploy:
+  # TODO Update this to build the artifacts that matter to you
+  - cargo rustc --target %TARGET% --release --bin dot -- -C lto
+  - ps: ci\before_deploy.ps1
 
 deploy:
-  appveyor_repo_tag: true
-  provider: GitHub
-  draft: false
-  prerelease: false
-  force_update: true
+  artifact: /.*\.zip/
+  # TODO update `auth_token.secure`
+  # - Create a `public_repo` GitHub token. Go to: https://github.com/settings/tokens/new
+  # - Encrypt it. Go to https://ci.appveyor.com/tools/encrypt
+  # - Paste the output down here
   auth_token:
     secure: wf5/9pbr8Jl2sGXJSnm6m9qLT5Xu6cgbXZ8vO+81DnXcCUSvO2hZMW2mCSGNTVqW
+  description: ''
   on:
-    branch: master
+    # TODO Here you can pick which targets will generate binary releases
+    # In this example, there are some targets that are tested using the stable
+    # and nightly channels. This condition makes sure there is only one release
+    # for such targets and that's generated using the stable channel
+    RUST_VERSION: stable
     appveyor_repo_tag: true
+  provider: GitHub
 
 cache:
-  - C:\Users\appveyor\.cargo
-  - C:\Users\appveyor\.rustup
+  - C:\Users\appveyor\.cargo\registry
   - target
+
+branches:
+  only:
+    # Release tags
+    - /^v\d+\.\d+\.\d+.*$/
+    - master
+    - /^feat\/.*$/
+
+notifications:
+  - provider: Email
+    on_build_success: false
+
+# Building is done in the test phase, so we disable Appveyor's build phase.
+build: false
