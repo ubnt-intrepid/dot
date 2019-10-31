@@ -10,6 +10,7 @@ use regex::Regex;
 #[cfg(windows)]
 use windows;
 
+extern crate dirs;
 
 pub struct App {
     dotfiles: Dotfiles,
@@ -106,7 +107,7 @@ pub fn check_symlink_privilege() {}
 
 fn init_envs() -> Result<String> {
     if env::var("HOME").is_err() {
-        env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
+        env::set_var("HOME", dirs::home_dir().unwrap());
     }
 
     let dotdir = env::var("DOT_DIR")
