@@ -3,15 +3,17 @@ name = "dot"
 version = "0.1.4"
 authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
 description = "Alternative of dotfile management frameworks"
+edition = "2018"
 
 [dependencies]
 ansi_term = "0.9"
 clap = "2.20"
-error-chain = "0.11"
+error-chain = "0.12.1"
 regex = "0.2.1"
 shellexpand = "1"
 toml = "0.4"
 url = "1.5"
+dirs = "2.0.2"
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.2.8"

@@ -23,7 +23,7 @@ pub fn wait_exec(cmd: &str, args: &[&str], curr_dir: Option<&Path>, dry_run: boo
         command.current_dir(curr_dir);
     }
 
-    let mut child = try!(command.spawn());
+    let mut child = command.spawn()?;
     child.wait()
          .and_then(|st| st.code().ok_or(io::Error::new(io::ErrorKind::Other, "")))
 }
@@ -60,7 +60,7 @@ pub fn make_link<P, Q>(src: P, dst: Q, dry_run: bool) -> Result<(), io::Error>
                  dst.as_ref().display());
         Ok(())
     } else {
-        try!(fs::create_dir_all(dst.as_ref().parent().unwrap()));
+        fs::create_dir_all(dst.as_ref().parent().unwrap())?;
         symlink(src, dst)
     }
 }
@@ -91,10 +91,10 @@ pub fn remove_link<P: AsRef<Path>>(dst: P, dry_run: bool) -> Result<(), io::Erro
 
 
 pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::value::Table, io::Error> {
-    let mut file = try!(File::open(path));
+    let mut file = File::open(path)?;
 
     let mut buf = Vec::new();
-    try!(file.read_to_end(&mut buf));
+    file.read_to_end(&mut buf)?;
 
     let content = String::from_utf8_lossy(&buf[..]).into_owned();
     toml::de::from_str(&content).map_err(|_| {
@@ -129,6 +129,6 @@ pub fn make_pathbuf(path: &str) -> PathBuf {
 }
 
 pub fn is_symlink<P: AsRef<Path>>(path: P) -> Result<bool, io::Error> {
-    let meta = try!(path.as_ref().symlink_metadata());
+    let meta = path.as_ref().symlink_metadata()?;
     Ok(meta.file_type().is_symlink())
 }

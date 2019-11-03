@@ -1,15 +1,15 @@
 use std::borrow::Borrow;
 use std::env;
 use std::path::Path;
-use dotfiles::Dotfiles;
-use util;
-use errors::Result;
+use crate::dotfiles::Dotfiles;
+use crate::util;
+use crate::errors::Result;
 use url::Url;
 use regex::Regex;
+use dirs;
 
 #[cfg(windows)]
 use windows;
-
 
 pub struct App {
     dotfiles: Dotfiles,
@@ -106,7 +106,7 @@ pub fn check_symlink_privilege() {}
 
 fn init_envs() -> Result<String> {
     if env::var("HOME").is_err() {
-        env::set_var("HOME", env::home_dir().unwrap().to_str().unwrap());
+        env::set_var("HOME", dirs::home_dir().unwrap());
     }
 
     let dotdir = env::var("DOT_DIR")
