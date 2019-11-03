@@ -6,11 +6,10 @@ use crate::util;
 use crate::errors::Result;
 use url::Url;
 use regex::Regex;
+use dirs;
 
 #[cfg(windows)]
 use windows;
-
-extern crate dirs;
 
 pub struct App {
     dotfiles: Dotfiles,
