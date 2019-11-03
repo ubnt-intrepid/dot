@@ -3,6 +3,7 @@ name = "dot"
 version = "0.1.4"
 authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
 description = "Alternative of dotfile management frameworks"
+edition = "2018"
 
 [dependencies]
 ansi_term = "0.9"

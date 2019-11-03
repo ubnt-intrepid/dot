@@ -1,9 +1,9 @@
 use std::borrow::Borrow;
 use std::env;
 use std::path::Path;
-use dotfiles::Dotfiles;
-use util;
-use errors::Result;
+use crate::dotfiles::Dotfiles;
+use crate::util;
+use crate::errors::Result;
 use url::Url;
 use regex::Regex;
 

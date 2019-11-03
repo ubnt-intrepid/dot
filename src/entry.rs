@@ -2,7 +2,7 @@ use std::io;
 use std::fs;
 use std::path::{Path, PathBuf};
 use ansi_term;
-use util;
+use crate::util;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntryStatus {
@@ -30,9 +30,9 @@ impl Entry {
     pub fn status(&self) -> Result<EntryStatus, io::Error> {
         let status = if !self.dst.exists() {
             EntryStatus::LinkNotCreated
-        } else if !try!(util::is_symlink(&self.dst)) {
+        } else if !util::is_symlink(&self.dst)? {
             EntryStatus::NotSymLink
-        } else if self.src != try!(self.dst.read_link()) {
+        } else if self.src != self.dst.read_link()? {
             EntryStatus::WrongLinkPath
         } else {
             EntryStatus::Healthy
@@ -42,7 +42,7 @@ impl Entry {
     }
 
     pub fn check(&self, verbose: bool) -> Result<bool, io::Error> {
-        let status = try!(self.status());
+        let status = self.status()?;
         if status != EntryStatus::Healthy {
             println!("{} {} ({:?})",
                      ansi_term::Style::new()
@@ -66,16 +66,16 @@ impl Entry {
     }
 
     pub fn mklink(&self, dry_run: bool, verbose: bool) -> Result<(), io::Error> {
-        if !self.src.exists() || try!(self.status()) == EntryStatus::Healthy {
+        if !self.src.exists() || self.status()? == EntryStatus::Healthy {
             return Ok(()); // Do nothing.
         }
 
-        if self.dst.exists() && !try!(util::is_symlink(&self.dst)) {
+        if self.dst.exists() && !util::is_symlink(&self.dst)? {
             let origpath = orig_path(&self.dst);
             println!("file {} has already existed. It will be renamed to {}",
                      self.dst.display(),
                      origpath.display());
-            try!(fs::rename(&self.dst, origpath));
+            fs::rename(&self.dst, origpath)?;
         }
 
         if verbose {
@@ -85,18 +85,18 @@ impl Entry {
     }
 
     pub fn unlink(&self, dry_run: bool, verbose: bool) -> Result<(), io::Error> {
-        if !self.dst.exists() || !try!(util::is_symlink(&self.dst)) {
+        if !self.dst.exists() || !util::is_symlink(&self.dst)? {
             return Ok(()); // do nothing
         }
 
         if verbose {
             println!("unlink {}", self.dst.display());
         }
-        try!(util::remove_link(&self.dst, dry_run));
+        util::remove_link(&self.dst, dry_run)?;
 
         let origpath = orig_path(&self.dst);
         if origpath.exists() {
-            try!(fs::rename(origpath, &self.dst));
+            fs::rename(origpath, &self.dst)?;
         }
 
         Ok(())

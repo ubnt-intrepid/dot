@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
-use entry::Entry;
-use util;
+use crate::entry::Entry;
+use crate::util;
 use toml;
 
 
@@ -61,7 +61,7 @@ fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::value::Table, roo
 mod tests {
     use super::{Dotfiles, read_entries_from_key};
     use std::path::Path;
-    use util;
+    use crate::util;
 
     #[test]
     fn smoke_test() {
