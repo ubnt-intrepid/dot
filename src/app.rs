@@ -9,7 +9,7 @@ use regex::Regex;
 use dirs;
 
 #[cfg(windows)]
-use windows;
+use crate::windows;
 
 pub struct App {
     dotfiles: Dotfiles,

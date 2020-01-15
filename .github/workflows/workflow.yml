@@ -1,0 +1,80 @@
+name: Workflow
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+
+env:
+  CARGO_TERM_VERBOSE: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        conf:
+          - { target: x86_64-unknown-linux-gnu  , os: ubuntu-18.04   }
+          - { target: x86_64-unknown-linux-musl , os: ubuntu-18.04   , use_cross: true }
+          - { target: x86_64-pc-windows-msvc    , os: windows-latest }
+          # - { target: x86_64-pc-windows-gnu     , os: ubuntu-latest  , use_cross: true }
+          - { target: x86_64-apple-darwin       , os: macos-latest   }
+          # - { target: x86_64-unknown-freebsd    , os: ubuntu-18.04   , use_cross: true , disable_tests: true }
+          # - { target: arm-linux-androideabi     , os: ubuntu-18.04   , use_cross: true , disable_tests: true }
+
+    runs-on: ${{ matrix.conf.os }}
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Cache cargo registry
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo index
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        target: ${{ matrix.conf.target }}
+        override: true
+
+    - name: Run tests
+      uses: actions-rs/cargo@v1
+      if: matrix.conf.disable_tests != true
+      with:
+        use-cross: ${{ matrix.conf.use_cross == true }}
+        command: test
+        args: --target ${{ matrix.conf.target }}
+
+    - name: Build artifact
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ matrix.conf.use_cross == true }}
+        command: build
+        args: --target ${{ matrix.conf.target }} --release
+
+    - name: Zip artifact
+      run: zip --junk-paths dot-${{ matrix.conf.target }}.zip target/${{ matrix.conf.target }}/release/dot
+      if: contains(runner.os, 'windows') == false
+
+    - name: Zip artifact
+      run: Compress-Archive -Destination dot-${{ matrix.conf.target }}.zip -Path target/${{ matrix.conf.target }}/release/dot.exe
+      if: contains(runner.os, 'windows')
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: dot-${{ matrix.conf.target }}.zip
+        path: dot-${{ matrix.conf.target }}.zip
+
+# TODO: deploy to GitHub Release
