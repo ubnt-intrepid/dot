@@ -164,10 +164,10 @@ impl Drop for Sid {
 
 pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
     // 1. retrieve the process token of current process.
-    let token = try!(open_process_token(winnt::TOKEN_ADJUST_PRIVILEGES | winnt::TOKEN_QUERY));
+    let token = open_process_token(winnt::TOKEN_ADJUST_PRIVILEGES | winnt::TOKEN_QUERY)?;
 
     // 2. retrieve a LUID for given priviledge
-    let luid = try!(lookup_privilege_value(name));
+    let luid = lookup_privilege_value(name)?;
 
     let len = mem::size_of::<winnt::TOKEN_PRIVILEGES>() + 1 * mem::size_of::<winnt::LUID_AND_ATTRIBUTES>();
     let token_privileges = vec![0u8; len];
@@ -195,7 +195,7 @@ pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
 }
 
 pub fn is_elevated() -> Result<bool, &'static str> {
-    let token = try!(open_process_token(winnt::TOKEN_QUERY));
+    let token = open_process_token(winnt::TOKEN_QUERY)?;
 
     let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
     let mut cb_size: u32 = mem::size_of_val(&elevation) as u32;
@@ -221,7 +221,7 @@ pub enum ElevationType {
 }
 
 pub fn get_elevation_type() -> Result<ElevationType, &'static str> {
-    let token = try!(open_process_token(winnt::TOKEN_QUERY));
+    let token = open_process_token(winnt::TOKEN_QUERY)?;
 
     let mut elev_type = 0;
     let mut cb_size = mem::size_of_val(&elev_type) as u32;

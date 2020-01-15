@@ -1,6 +1,6 @@
 # `dot`
-[![Build Status](https://travis-ci.org/ubnt-intrepid/dot.svg?branch=master)](https://travis-ci.org/ubnt-intrepid/dot)
-[![Build status](https://ci.appveyor.com/api/projects/status/mleixxiv2p6saqpw/branch/master?svg=true)](https://ci.appveyor.com/project/ubnt-intrepid/dot/branch/master)
+
+![GitHub Actions](https://github.com/ubnt-intrepid/dot/workflows/Workflow/badge.svg)
 
 `dot` is a command-line tool for managing dotfiles, written in Rust.
 
