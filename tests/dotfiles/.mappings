@@ -2,12 +2,12 @@
 
 [general]
 "tmux.conf"     = "~/.tmux.conf"
-gitconfig       = "~/.gitconfig"
+gitconfig       = ["~/.gitconfig", "~/.config/git/config"]
 tigrc           = "~/.tigrc"
 zsh             = "~/.config/zsh"
 "zsh/zshenv"    = "~/.zshenv"
 "zsh/zshrc"     = "~/.zshrc"
-vim             = "~/.config/vim"
+vim             = ["~/.vim", "~/.config/nvim"]
 "vim/vimrc"     = "~/.vimrc"
 "vim/gvimrc"    = "~/.gvimrc"
 

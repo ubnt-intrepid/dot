@@ -1,8 +1,7 @@
-use std::path::{Path, PathBuf};
 use crate::entry::Entry;
 use crate::util;
+use std::path::{Path, PathBuf};
 use toml;
-
 
 pub struct Dotfiles {
     _root_dir: PathBuf,
@@ -40,18 +39,29 @@ fn read_entries(root_dir: &Path) -> Vec<Entry> {
     buf
 }
 
+fn new_entry(root_dir: &Path, key: &str, val: &str) -> Entry {
+    let src = util::expand_full(&format!("{}/{}", root_dir.display(), key)).unwrap();
+
+    let mut dst = util::expand_full(val).unwrap();
+    if Path::new(&dst).is_relative() {
+        dst = util::expand_full(&format!("$HOME/{}", val)).unwrap();
+    }
+
+    Entry::new(&src, &dst)
+}
+
 fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::value::Table, root_dir: &Path, key: &str) {
     if let Some(entries_table) = entries.get(key).and_then(|value| value.as_table()) {
         for (ref key, ref val) in entries_table.iter() {
             if let Some(val) = val.as_str() {
-                let src = util::expand_full(&format!("{}/{}", root_dir.display(), key)).unwrap();
-
-                let mut dst = util::expand_full(val).unwrap();
-                if Path::new(&dst).is_relative() {
-                    dst = util::expand_full(&format!("$HOME/{}", val)).unwrap();
+                buf.push(new_entry(root_dir, key, val));
+            }
+            if let Some(val) = val.as_array() {
+                for v in val {
+                    if let Some(v) = v.as_str() {
+                        buf.push(new_entry(root_dir, key, v));
+                    }
                 }
-
-                buf.push(Entry::new(&src, &dst));
             }
         }
     }
@@ -59,9 +69,9 @@ fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::value::Table, roo
 
 #[cfg(test)]
 mod tests {
-    use super::{Dotfiles, read_entries_from_key};
-    use std::path::Path;
+    use super::{read_entries_from_key, Dotfiles};
     use crate::util;
+    use std::path::Path;
 
     #[test]
     fn smoke_test() {
