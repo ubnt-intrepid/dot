@@ -45,7 +45,7 @@ For more information, run `dot help`.
 ```toml
 [general]
 gitconfig   = "~/.gitconfig"
-"vim/vimrc" = "~/.vimrc"
+"vim/vimrc" = ["~/.vimrc", "~/.config/nvim/init.vim"]
 #...
 
 [windows]
