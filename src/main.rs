@@ -19,17 +19,17 @@ pub fn run() -> dot::Result<i32> {
     let mut app = App::new(dry_run, verbose)?;
 
     match matches.subcommand() {
-        ("check", _) => app.command_check(),
-        ("link", _) => app.command_link(),
-        ("clean", _) => app.command_clean(),
-        ("root", _) => app.command_root(),
+        Some(("check", _)) => app.command_check(),
+        Some(("link", _)) => app.command_link(),
+        Some(("clean", _)) => app.command_clean(),
+        Some(("root", _)) => app.command_root(),
 
-        ("clone", Some(args)) => {
+        Some(("clone", args)) => {
             let url = args.value_of("url").unwrap();
             app.command_clone(url)
         }
 
-        ("init", Some(args)) => {
+        Some(("init", args)) => {
             let url = args.value_of("url").unwrap();
             let ret = app.command_clone(url)?;
             if ret != 0 {
@@ -38,38 +38,38 @@ pub fn run() -> dot::Result<i32> {
             app.command_link()
         }
 
-        ("completion", Some(args)) => {
-            let shell = args.value_of("shell").unwrap();
-            cli().gen_completions_to(
+        Some(("completion", args)) => {
+            let shell: clap_complete::Shell = args.value_of_t_or_exit("shell");
+            clap_complete::generate(
+                shell,
+                &mut cli(),
                 env!("CARGO_PKG_NAME"),
-                shell.parse::<clap::Shell>().unwrap(),
                 &mut std::io::stdout(),
             );
             Ok(0)
         }
 
-        (_, _) => unreachable!(),
+        Some(..) | None => unreachable!(),
     }
 }
 
-fn cli() -> clap::App<'static, 'static> {
-    clap::App::new(env!("CARGO_PKG_NAME"))
+fn cli() -> clap::Command<'static> {
+    clap::Command::new(env!("CARGO_PKG_NAME"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
-        .setting(AppSettings::VersionlessSubcommands)
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(
             Arg::with_name("verbose")
                 .help("Use verbose output")
                 .long("verbose")
-                .short("v"),
+                .short('v'),
         )
         .arg(
             Arg::with_name("dry-run")
                 .help("do not actually perform I/O operations")
                 .long("dry-run")
-                .short("n"),
+                .short('n'),
         )
         .subcommand(
             SubCommand::with_name("check")
