@@ -5,21 +5,19 @@
 #![allow(dead_code)]
 #![allow(improper_ctypes)]
 
+use advapi32;
+use kernel32;
 use std::ffi::CString;
 use std::mem;
 use std::os::raw::c_void;
 use std::ptr::{null, null_mut};
-use winapi::LUID;
 use winapi::winerror::ERROR_SUCCESS;
 use winapi::winnt;
-use kernel32;
-use advapi32;
-
+use winapi::LUID;
 
 type BYTE = u8;
 type BOOL = i32;
 type DWORD = u32;
-
 
 #[repr(C)]
 struct TOKEN_ELEVATION {
@@ -98,33 +96,37 @@ enum TOKEN_INFORMATION_CLASS {
 }
 
 extern "system" {
-    fn GetTokenInformation(TokenHandle: winnt::HANDLE,
-                           TokenInformationClass: DWORD,
-                           TokenInformation: *mut c_void,
-                           TokenInformationLength: DWORD,
-                           ReturnLength: *mut DWORD)
-                           -> BOOL;
+    fn GetTokenInformation(
+        TokenHandle: winnt::HANDLE,
+        TokenInformationClass: DWORD,
+        TokenInformation: *mut c_void,
+        TokenInformationLength: DWORD,
+        ReturnLength: *mut DWORD,
+    ) -> BOOL;
 
     fn IsUserAnAdmin() -> BOOL;
 
-    fn AllocateAndInitializeSid(pIdentifierAuthority: PSID_IDENTIFIER_AUTHORITY,
-                                nSubAuthorityCount: BYTE,
-                                dwSubAuthority0: DWORD,
-                                dwSubAuthority1: DWORD,
-                                dwSubAuthority2: DWORD,
-                                dwSubAuthority3: DWORD,
-                                dwSubAuthority4: DWORD,
-                                dwSubAuthority5: DWORD,
-                                dwSubAuthority6: DWORD,
-                                dwSubAuthority7: DWORD,
-                                pSid: *mut PSID)
-                                -> BOOL;
+    fn AllocateAndInitializeSid(
+        pIdentifierAuthority: PSID_IDENTIFIER_AUTHORITY,
+        nSubAuthorityCount: BYTE,
+        dwSubAuthority0: DWORD,
+        dwSubAuthority1: DWORD,
+        dwSubAuthority2: DWORD,
+        dwSubAuthority3: DWORD,
+        dwSubAuthority4: DWORD,
+        dwSubAuthority5: DWORD,
+        dwSubAuthority6: DWORD,
+        dwSubAuthority7: DWORD,
+        pSid: *mut PSID,
+    ) -> BOOL;
     fn FreeSid(pSid: PSID) -> *mut c_void;
 
-    fn CheckTokenMembership(TokenHandle: winnt::HANDLE, SidToCheck: PSID, IsMember: *mut BOOL) -> BOOL;
+    fn CheckTokenMembership(
+        TokenHandle: winnt::HANDLE,
+        SidToCheck: PSID,
+        IsMember: *mut BOOL,
+    ) -> BOOL;
 }
-
-
 
 struct Handle(winnt::HANDLE);
 
@@ -145,7 +147,6 @@ impl Drop for Handle {
     }
 }
 
-
 struct Sid(PSID);
 
 impl Sid {
@@ -161,7 +162,6 @@ impl Drop for Sid {
     }
 }
 
-
 pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
     // 1. retrieve the process token of current process.
     let token = open_process_token(winnt::TOKEN_ADJUST_PRIVILEGES | winnt::TOKEN_QUERY)?;
@@ -169,7 +169,8 @@ pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
     // 2. retrieve a LUID for given priviledge
     let luid = lookup_privilege_value(name)?;
 
-    let len = mem::size_of::<winnt::TOKEN_PRIVILEGES>() + 1 * mem::size_of::<winnt::LUID_AND_ATTRIBUTES>();
+    let len = mem::size_of::<winnt::TOKEN_PRIVILEGES>()
+        + 1 * mem::size_of::<winnt::LUID_AND_ATTRIBUTES>();
     let token_privileges = vec![0u8; len];
     unsafe {
         let mut p = token_privileges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES;
@@ -180,12 +181,14 @@ pub fn enable_privilege(name: &str) -> Result<(), &'static str> {
     }
 
     unsafe {
-        advapi32::AdjustTokenPrivileges(token.as_raw(),
-                                        0,
-                                        token_privileges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES,
-                                        0,
-                                        null_mut(),
-                                        null_mut());
+        advapi32::AdjustTokenPrivileges(
+            token.as_raw(),
+            0,
+            token_privileges.as_ptr() as *mut winnt::TOKEN_PRIVILEGES,
+            0,
+            null_mut(),
+            null_mut(),
+        );
     }
 
     match unsafe { kernel32::GetLastError() } {
@@ -200,11 +203,13 @@ pub fn is_elevated() -> Result<bool, &'static str> {
     let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
     let mut cb_size: u32 = mem::size_of_val(&elevation) as u32;
     let ret = unsafe {
-        GetTokenInformation(token.as_raw(),
-                            mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevation) as u32,
-                            mem::transmute(&mut elevation),
-                            mem::size_of_val(&elevation) as u32,
-                            &mut cb_size)
+        GetTokenInformation(
+            token.as_raw(),
+            mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevation) as u32,
+            mem::transmute(&mut elevation),
+            mem::size_of_val(&elevation) as u32,
+            &mut cb_size,
+        )
     };
     if ret == 0 {
         return Err("failed to get token information");
@@ -226,27 +231,31 @@ pub fn get_elevation_type() -> Result<ElevationType, &'static str> {
     let mut elev_type = 0;
     let mut cb_size = mem::size_of_val(&elev_type) as u32;
     let ret = unsafe {
-        GetTokenInformation(token.as_raw(),
-                            mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevationType) as u32,
-                            mem::transmute(&mut elev_type),
-                            mem::size_of_val(&elev_type) as u32,
-                            &mut cb_size)
+        GetTokenInformation(
+            token.as_raw(),
+            mem::transmute::<_, u8>(TOKEN_INFORMATION_CLASS::TokenElevationType) as u32,
+            mem::transmute(&mut elev_type),
+            mem::size_of_val(&elev_type) as u32,
+            &mut cb_size,
+        )
     };
     if ret == 0 {
         return Err("failed to get token information");
     }
 
     match elev_type {
-        1 => Ok(ElevationType::Default),      // default (standard user/ administrator without UAC)
-        2 => Ok(ElevationType::Full),         // full access (administrator, not elevated)
-        3 => Ok(ElevationType::Limited),      // limited access (administrator, not elevated)
+        1 => Ok(ElevationType::Default), // default (standard user/ administrator without UAC)
+        2 => Ok(ElevationType::Full),    // full access (administrator, not elevated)
+        3 => Ok(ElevationType::Limited), // limited access (administrator, not elevated)
         _ => Err("unknown elevation type"),
     }
 }
 
 fn open_process_token(token_type: u32) -> Result<Handle, &'static str> {
     let mut h_token = null_mut();
-    let ret = unsafe { advapi32::OpenProcessToken(kernel32::GetCurrentProcess(), token_type, &mut h_token) };
+    let ret = unsafe {
+        advapi32::OpenProcessToken(kernel32::GetCurrentProcess(), token_type, &mut h_token)
+    };
     match ret {
         0 => Err("failed to get process token"),
         _ => Ok(Handle::new(h_token)),

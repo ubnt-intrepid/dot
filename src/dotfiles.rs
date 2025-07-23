@@ -50,7 +50,12 @@ fn new_entry(root_dir: &Path, key: &str, val: &str) -> Entry {
     Entry::new(&src, &dst)
 }
 
-fn read_entries_from_key(buf: &mut Vec<Entry>, entries: &toml::value::Table, root_dir: &Path, key: &str) {
+fn read_entries_from_key(
+    buf: &mut Vec<Entry>,
+    entries: &toml::value::Table,
+    root_dir: &Path,
+    key: &str,
+) {
     if let Some(entries_table) = entries.get(key).and_then(|value| value.as_table()) {
         for (ref key, ref val) in entries_table.iter() {
             if let Some(val) = val.as_str() {

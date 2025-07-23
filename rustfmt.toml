@@ -1,7 +1,0 @@
-write_mode = "Overwrite"
-tab_spaces = 4
-max_width = 120
-array_layout = "Block"
-chain_indent = "Visual"
-closure_block_indent_threshold = 0
-take_source_hints = true

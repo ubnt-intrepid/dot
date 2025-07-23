@@ -1,7 +1,7 @@
-extern crate dot;
 extern crate clap;
+extern crate dot;
 
-use clap::{Arg, AppSettings, SubCommand};
+use clap::{AppSettings, Arg, SubCommand};
 use dot::App;
 
 pub fn main() {
@@ -40,9 +40,11 @@ pub fn run() -> dot::Result<i32> {
 
         ("completion", Some(args)) => {
             let shell = args.value_of("shell").unwrap();
-            cli().gen_completions_to(env!("CARGO_PKG_NAME"),
-                                     shell.parse::<clap::Shell>().unwrap(),
-                                     &mut std::io::stdout());
+            cli().gen_completions_to(
+                env!("CARGO_PKG_NAME"),
+                shell.parse::<clap::Shell>().unwrap(),
+                &mut std::io::stdout(),
+            );
             Ok(0)
         }
 
@@ -57,35 +59,63 @@ fn cli() -> clap::App<'static, 'static> {
         .author(env!("CARGO_PKG_AUTHORS"))
         .setting(AppSettings::VersionlessSubcommands)
         .setting(AppSettings::SubcommandRequiredElseHelp)
-        .arg(Arg::with_name("verbose")
-                 .help("Use verbose output")
-                 .long("verbose")
-                 .short("v"))
-        .arg(Arg::with_name("dry-run")
-                 .help("do not actually perform I/O operations")
-                 .long("dry-run")
-                 .short("n"))
-        .subcommand(SubCommand::with_name("check").about("Check the files are correctly linked to the right places"))
-        .subcommand(SubCommand::with_name("link").about("Create all of the symbolic links into home directory"))
-        .subcommand(SubCommand::with_name("clean").about("Remote all of registered links from home directory"))
-        .subcommand(SubCommand::with_name("root").about("Show the location of dotfiles repository and exit"))
-        .subcommand(SubCommand::with_name("clone")
-                        .about("Clone dotfiles repository from remote")
-                        .arg(Arg::with_name("url")
-                                 .help("URL of remote repository")
-                                 .required(true)
-                                 .takes_value(true)))
-        .subcommand(SubCommand::with_name("init")
-                        .about("Clone dotfiles repository from remote & make links")
-                        .arg(Arg::with_name("url")
-                                 .help("URL of remote repository")
-                                 .required(true)
-                                 .takes_value(true)))
-        .subcommand(SubCommand::with_name("completion")
-                        .about("Generate completion scripts")
-                        .setting(AppSettings::ArgRequiredElseHelp)
-                        .arg(Arg::with_name("shell")
-                                 .help("target shell")
-                                 .required(true)
-                                 .possible_values(&["bash", "fish", "zsh", "powershell"])))
+        .arg(
+            Arg::with_name("verbose")
+                .help("Use verbose output")
+                .long("verbose")
+                .short("v"),
+        )
+        .arg(
+            Arg::with_name("dry-run")
+                .help("do not actually perform I/O operations")
+                .long("dry-run")
+                .short("n"),
+        )
+        .subcommand(
+            SubCommand::with_name("check")
+                .about("Check the files are correctly linked to the right places"),
+        )
+        .subcommand(
+            SubCommand::with_name("link")
+                .about("Create all of the symbolic links into home directory"),
+        )
+        .subcommand(
+            SubCommand::with_name("clean")
+                .about("Remote all of registered links from home directory"),
+        )
+        .subcommand(
+            SubCommand::with_name("root")
+                .about("Show the location of dotfiles repository and exit"),
+        )
+        .subcommand(
+            SubCommand::with_name("clone")
+                .about("Clone dotfiles repository from remote")
+                .arg(
+                    Arg::with_name("url")
+                        .help("URL of remote repository")
+                        .required(true)
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("init")
+                .about("Clone dotfiles repository from remote & make links")
+                .arg(
+                    Arg::with_name("url")
+                        .help("URL of remote repository")
+                        .required(true)
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("completion")
+                .about("Generate completion scripts")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .arg(
+                    Arg::with_name("shell")
+                        .help("target shell")
+                        .required(true)
+                        .possible_values(&["bash", "fish", "zsh", "powershell"]),
+                ),
+        )
 }

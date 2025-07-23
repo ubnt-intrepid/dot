@@ -1,38 +1,42 @@
-use std::env;
-use std::io::{self, Read};
-use std::fs::{self, File};
-use std::process::{Command, Stdio};
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use shellexpand::{self, LookupError};
+use std::env;
+use std::fs::{self, File};
+use std::io::{self, Read};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
+use std::process::{Command, Stdio};
 use toml;
 
-
 #[allow(dead_code)]
-pub fn wait_exec(cmd: &str, args: &[&str], curr_dir: Option<&Path>, dry_run: bool) -> Result<i32, io::Error> {
+pub fn wait_exec(
+    cmd: &str,
+    args: &[&str],
+    curr_dir: Option<&Path>,
+    dry_run: bool,
+) -> Result<i32, io::Error> {
     if dry_run {
         println!("{} {:?} (@ {:?})", cmd, args, curr_dir);
         return Ok(0);
     }
 
     let mut command = Command::new(cmd);
-    command.args(args)
-           .stdin(Stdio::inherit())
-           .stdout(Stdio::inherit())
-           .stderr(Stdio::inherit());
+    command
+        .args(args)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
     if let Some(curr_dir) = curr_dir {
         command.current_dir(curr_dir);
     }
 
     let mut child = command.spawn()?;
-    child.wait()
-         .and_then(|st| st.code().ok_or(io::Error::new(io::ErrorKind::Other, "")))
+    child
+        .wait()
+        .and_then(|st| st.code().ok_or(io::Error::new(io::ErrorKind::Other, "")))
 }
-
 
 pub fn expand_full(s: &str) -> Result<String, LookupError<env::VarError>> {
     shellexpand::full(s).map(|s| s.into_owned())
 }
-
 
 #[cfg(windows)]
 fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<(), io::Error> {
@@ -51,20 +55,22 @@ fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<(), io::Err
 }
 
 pub fn make_link<P, Q>(src: P, dst: Q, dry_run: bool) -> Result<(), io::Error>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     if dry_run {
-        println!("make_link({}, {})",
-                 src.as_ref().display(),
-                 dst.as_ref().display());
+        println!(
+            "make_link({}, {})",
+            src.as_ref().display(),
+            dst.as_ref().display()
+        );
         Ok(())
     } else {
         fs::create_dir_all(dst.as_ref().parent().unwrap())?;
         symlink(src, dst)
     }
 }
-
 
 #[cfg(windows)]
 fn unlink<P: AsRef<Path>>(dst: P) -> Result<(), io::Error> {
@@ -89,7 +95,6 @@ pub fn remove_link<P: AsRef<Path>>(dst: P, dry_run: bool) -> Result<(), io::Erro
     }
 }
 
-
 pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::value::Table, io::Error> {
     let mut file = File::open(path)?;
 
@@ -98,11 +103,12 @@ pub fn read_toml<P: AsRef<Path>>(path: P) -> Result<toml::value::Table, io::Erro
 
     let content = String::from_utf8_lossy(&buf[..]).into_owned();
     toml::de::from_str(&content).map_err(|_| {
-        io::Error::new(io::ErrorKind::Other,
-                       "failed to parse configuration file as TOML")
+        io::Error::new(
+            io::ErrorKind::Other,
+            "failed to parse configuration file as TOML",
+        )
     })
 }
-
 
 #[cfg(target_os = "windows")]
 pub static OS_NAME: &'static str = "windows";

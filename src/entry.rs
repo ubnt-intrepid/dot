@@ -1,8 +1,8 @@
-use std::io;
-use std::fs;
-use std::path::{Path, PathBuf};
-use ansi_term;
 use crate::util;
+use ansi_term;
+use std::fs;
+use std::io;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntryStatus {
@@ -11,7 +11,6 @@ pub enum EntryStatus {
     NotSymLink,
     WrongLinkPath,
 }
-
 
 #[derive(Debug, Clone)]
 pub struct Entry {
@@ -44,23 +43,27 @@ impl Entry {
     pub fn check(&self, verbose: bool) -> Result<bool, io::Error> {
         let status = self.status()?;
         if status != EntryStatus::Healthy {
-            println!("{} {} ({:?})",
-                     ansi_term::Style::new()
-                         .bold()
-                         .fg(ansi_term::Colour::Red)
-                         .paint("✘"),
-                     self.dst.display(),
-                     status);
+            println!(
+                "{} {} ({:?})",
+                ansi_term::Style::new()
+                    .bold()
+                    .fg(ansi_term::Colour::Red)
+                    .paint("✘"),
+                self.dst.display(),
+                status
+            );
             return Ok(false);
         }
         if verbose {
-            println!("{} {}\n  => {}",
-                     ansi_term::Style::new()
-                         .bold()
-                         .fg(ansi_term::Colour::Green)
-                         .paint("✓"),
-                     self.dst.display(),
-                     self.src.display());
+            println!(
+                "{} {}\n  => {}",
+                ansi_term::Style::new()
+                    .bold()
+                    .fg(ansi_term::Colour::Green)
+                    .paint("✓"),
+                self.dst.display(),
+                self.src.display()
+            );
         }
         Ok(true)
     }
@@ -72,9 +75,11 @@ impl Entry {
 
         if self.dst.exists() && !util::is_symlink(&self.dst)? {
             let origpath = orig_path(&self.dst);
-            println!("file {} has already existed. It will be renamed to {}",
-                     self.dst.display(),
-                     origpath.display());
+            println!(
+                "file {} has already existed. It will be renamed to {}",
+                self.dst.display(),
+                origpath.display()
+            );
             fs::rename(&self.dst, origpath)?;
         }
 
@@ -102,7 +107,6 @@ impl Entry {
         Ok(())
     }
 }
-
 
 fn orig_path<P: AsRef<Path>>(path: P) -> PathBuf {
     let origpath = format!("{}.bk", path.as_ref().to_str().unwrap());
