@@ -7,7 +7,8 @@ edition = "2018"
 
 [dependencies]
 ansi_term = "0.9"
-clap = "2.20"
+clap = "3"
+clap_complete = "3"
 error-chain = "0.12.1"
 regex = "1.11"
 shellexpand = "1"
