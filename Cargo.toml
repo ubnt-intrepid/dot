@@ -1,6 +1,7 @@
 [package]
 name = "dot"
-version = "0.1.4"
+version = "0.2.0-dev"
+publish = false
 description = "Alternative of dotfile management frameworks"
 edition = "2018"
 
